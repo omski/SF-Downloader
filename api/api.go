@@ -40,7 +40,7 @@ type FDItem struct {
 // Login returns auth token
 func Login(user string, password string) (string, error) {
 
-	url := "https://api.SF.com/api/Users/login"
+	url := "https://api.schoolfox.com/api/Users/login"
 
 	payload := strings.NewReader("{username: \"" + user + "\", password: \"" + password + "\", applicationType: \"SF\"}")
 
@@ -55,13 +55,13 @@ func Login(user string, password string) (string, error) {
 	req.Header.Add("sec-ch-ua-mobile", "?0")
 	//req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36")
 	req.Header.Add("Content-Type", "application/json;charset=UTF-8")
-	req.Header.Add("Origin", "https://my.SF.app")
+	req.Header.Add("Origin", "https://my.schoolfox.app")
 	req.Header.Add("Sec-Fetch-Site", "cross-site")
 	req.Header.Add("Sec-Fetch-Mode", "cors")
 	req.Header.Add("Sec-Fetch-Dest", "empty")
-	req.Header.Add("Referer", "https://my.SF.app/")
+	req.Header.Add("Referer", "https://my.schoolfox.app/")
 	req.Header.Add("Accept-Language", "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7")
-	req.Header.Add("Host", "api.SF.com")
+	req.Header.Add("Host", "api.schoolfox.com")
 	req.Header.Add("Accept-Encoding", "gzip, deflate")
 	req.Header.Add("Content-Length", "79")
 	req.Header.Add("cache-control", "no-cache")
@@ -88,7 +88,7 @@ func Login(user string, password string) (string, error) {
 // Inventory loads the inventory
 func Inventory(authToken string) ([]Pupil, error) {
 
-	url := "https://api.SF.com/api/Common/Inventory"
+	url := "https://api.schoolfox.com/api/Common/Inventory"
 
 	req, _ := http.NewRequest("GET", url, nil)
 
@@ -101,13 +101,13 @@ func Inventory(authToken string) ([]Pupil, error) {
 	req.Header.Add("sec-ch-ua-mobile", "?0")
 	//req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36")
 	req.Header.Add("X-ZUMO-AUTH", authToken)
-	req.Header.Add("Origin", "https://my.SF.app")
+	req.Header.Add("Origin", "https://my.schoolfox.app")
 	req.Header.Add("Sec-Fetch-Site", "cross-site")
 	req.Header.Add("Sec-Fetch-Mode", "cors")
 	req.Header.Add("Sec-Fetch-Dest", "empty")
-	req.Header.Add("Referer", "https://my.SF.app/")
+	req.Header.Add("Referer", "https://my.schoolfox.app/")
 	req.Header.Add("Accept-Language", "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7")
-	req.Header.Add("Host", "api.SF.com")
+	req.Header.Add("Host", "api.schoolfox.com")
 	req.Header.Add("Accept-Encoding", "gzip, deflate")
 	req.Header.Add("cache-control", "no-cache")
 
@@ -131,7 +131,7 @@ func Inventory(authToken string) ([]Pupil, error) {
 
 // LoadFDItems
 func LoadFDItems(authToken string, parentItemID string, pupil Pupil) ([]FDItem, error) {
-	baseURL := "https://api.SF.com/tables/FDItems"
+	baseURL := "https://api.schoolfox.com/tables/FoxDriveItems"
 
 	if parentItemID != "null" {
 		parentItemID = "%27" + parentItemID + "%27"
@@ -152,11 +152,11 @@ func LoadFDItems(authToken string, parentItemID string, pupil Pupil) ([]FDItem, 
 	req.Header.Add("sec-ch-ua-mobile", "?0")
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36")
 	req.Header.Add("X-ZUMO-AUTH", authToken)
-	req.Header.Add("Origin", "https://my.SF.app")
+	req.Header.Add("Origin", "https://my.schoolfox.app")
 	req.Header.Add("Sec-Fetch-Site", "cross-site")
 	req.Header.Add("Sec-Fetch-Mode", "cors")
 	req.Header.Add("Sec-Fetch-Dest", "empty")
-	req.Header.Add("Referer", "https://my.SF.app/")
+	req.Header.Add("Referer", "https://my.schoolfox.app/")
 	req.Header.Add("Accept-Language", "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7")
 	req.Header.Add("cache-control", "no-cache")
 
@@ -185,7 +185,7 @@ func LoadFDItems(authToken string, parentItemID string, pupil Pupil) ([]FDItem, 
 }
 
 func LoadFDItem(authToken string, itemID string, pupil Pupil) (*FDItem, error) {
-	url := fmt.Sprintf("https://api.SF.com/api/FDItems/%v/Item/%v?pupilId=%v", pupil.SchoolClassID, itemID, pupil.ID)
+	url := fmt.Sprintf("https://api.schoolfox.com/api/FoxDriveItems/%v/Item/%v?pupilId=%v", pupil.SchoolClassID, itemID, pupil.ID)
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Add("Connection", "keep-alive")
 	req.Header.Add("Pragma", "no-cache")
@@ -196,11 +196,11 @@ func LoadFDItem(authToken string, itemID string, pupil Pupil) (*FDItem, error) {
 	req.Header.Add("sec-ch-ua-mobile", "?0")
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36")
 	req.Header.Add("X-ZUMO-AUTH", authToken)
-	req.Header.Add("Origin", "https://my.SF.app")
+	req.Header.Add("Origin", "https://my.schoolfox.app")
 	req.Header.Add("Sec-Fetch-Site", "cross-site")
 	req.Header.Add("Sec-Fetch-Mode", "cors")
 	req.Header.Add("Sec-Fetch-Dest", "empty")
-	req.Header.Add("Referer", "https://my.SF.app/")
+	req.Header.Add("Referer", "https://my.schoolfox.app/")
 	req.Header.Add("Accept-Language", "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7")
 	req.Header.Add("cache-control", "no-cache")
 

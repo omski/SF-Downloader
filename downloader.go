@@ -1,13 +1,14 @@
 package main
 
 import (
-	"SF-Downloader/client"
 	"bufio"
 	"errors"
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/omski/SF-Downloader/client"
 )
 
 func main() {

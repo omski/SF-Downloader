@@ -2,7 +2,8 @@ package client
 
 import (
 	"errors"
-	"sf-downloader/api"
+
+	"github.com/omski/SF-Downloader/api"
 )
 
 // SFClient

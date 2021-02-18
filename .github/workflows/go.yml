@@ -42,5 +42,5 @@ jobs:
           ${{ github.workspace }}/bin/SF-Downloader.macos_amd64
           ${{ github.workspace }}/bin/SF-Downloader.linux_amd64
           ${{ github.workspace }}/bin/SF-Downloader.windows_amd64.exe
-
-        
+        name: Release ${{ github.ref }}
+        body_path: ${{ github.workspace }}/release-notes.md

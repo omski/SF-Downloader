@@ -9,7 +9,7 @@ on:
 jobs:
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: macOS-latest
     steps:
     - uses: actions/checkout@v2
 
@@ -19,7 +19,15 @@ jobs:
         go-version: 1.15
 
     - name: Build
-      run: go build -v ./downloader.go
+      run: |
+        go build -v -o ${{ github.workspace }}/bin/ .
+        
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v2
+      if: ${{ success() }}
+      with:
+        if-no-files-found: warn # 'warn'
+        path: ${{ github.workspace }}/bin/*
 
 #    - name: Test
 #      run: go test -v ./...

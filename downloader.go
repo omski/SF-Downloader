@@ -1,21 +1,21 @@
 package main
 
 import (
+	"SF-Downloader/client"
 	"bufio"
 	"errors"
 	"fmt"
 	"os"
-	"schoolfox/api"
 	"strconv"
 	"strings"
 )
 
 func main() {
-	sfClient := new(api.SchoolfoxClient)
+	sfClient := new(client.SFClient)
 
 	for {
-		user, _ := promptForString("Schoolfox user")
-		password, _ := promptForString("Schoolfox password")
+		user, _ := promptForString("SF user")
+		password, _ := promptForString("SF password")
 		err := sfClient.Login(user, password)
 		if err != nil {
 			println("login failed > " + err.Error())
@@ -43,7 +43,7 @@ func main() {
 
 	fmt.Printf("selected %v\n", sfClient.SelectedPupil.Name)
 
-	items, err := sfClient.LoadFoxDriveItems(nil)
+	items, err := sfClient.LoadFDItems(nil)
 	if err != nil {
 		println(err.Error())
 	}
@@ -68,7 +68,7 @@ func main() {
 		if folderIndex == 0 && hasParent == 1 && sfClient.SelectedFolder.ParentItemID == nil {
 			sfClient.SelectedFolder = nil
 		} else if folderIndex == 0 && hasParent == 1 && sfClient.SelectedFolder.ParentItemID != nil {
-			parent, err := sfClient.LoadFoxDriveItem(*sfClient.SelectedFolder.ParentItemID)
+			parent, err := sfClient.LoadFDItem(*sfClient.SelectedFolder.ParentItemID)
 			if err != nil {
 				println(err.Error())
 			} else {
@@ -79,7 +79,7 @@ func main() {
 		} else {
 			sfClient.SelectedFolder = &items[folderIndex]
 		}
-		subItems, err := sfClient.LoadFoxDriveItems(sfClient.SelectedFolder)
+		subItems, err := sfClient.LoadFDItems(sfClient.SelectedFolder)
 		if err != nil {
 			println(err.Error())
 		} else {

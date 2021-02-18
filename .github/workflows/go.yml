@@ -29,28 +29,18 @@ jobs:
       if: ${{ success() }}
       with:
         if-no-files-found: warn # 'warn'
-        path: ${{ github.workspace }}/bin/*
+        path: ${{ github.workspace }}/bin/
 
-    - name: Create Release
-      if: ${{ success() }} && startsWith(github.ref, 'v')
-      id: create_release
-      uses: actions/create-release@v1
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        draft: not(startsWith(github.ref, 'v'))
-        prerelease: contains(github.ref, 'alpha') || contains(github.ref, 'beta')
+        prerelease: contains(github.ref, 'alpha')
+        files: |
+          ${{ github.workspace }}/bin/SF-Downloader.macos_amd64
+          ${{ github.workspace }}/bin/SF-Downloader.linux_amd64
+          ${{ github.workspace }}/bin/SF-Downloader.windows_amd64.exe
 
-    - name: Upload Release Asset
-      if: ${{ success() }}
-      id: upload-release-asset 
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-        asset_path: ${{ github.workspace }}/bin/SF-Downloader
-        asset_name: SF-Downloader
-        asset_content_type: application/octet-stream
+        

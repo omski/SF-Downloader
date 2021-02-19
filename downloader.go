@@ -60,6 +60,12 @@ func main() {
 		println("failed to load FD root > " + err.Error())
 	}
 	// select folders
+
+	commands := make(map[string]string)
+	commands["d"] = "download this folder"
+	commands["r"] = "download this folder repeatedly"
+	commands["x"] = "exit"
+
 	for {
 		screen.Clear()
 		hasParent := 0
@@ -76,12 +82,21 @@ func main() {
 				c--
 			}
 		}
-
-		folderIndex, err := promptForIntInRange(fmt.Sprintf("select folder [%v-%v]", 0, c), 0, c)
+		for i, v := range commands {
+			fmt.Printf("[%v] command: %v\n", i, v)
+		}
+		folderIndex, commandIndex, err := promptForIntInRangeOrCommand(fmt.Sprintf("select folder [%v-%v] or command", 0, c), 0, c, commands)
 		if err != nil {
 			continue
 		}
-		fmt.Printf("selected index %v \n", folderIndex)
+
+		if commandIndex != "nil" {
+			fmt.Printf("selected command %v \n", commands[commandIndex])
+			break
+		} else {
+			fmt.Printf("selected index %v \n", folderIndex)
+		}
+
 		if folderIndex == 0 && hasParent == 1 && sfClient.SelectedFolder.ParentItemID == nil {
 			sfClient.SelectedFolder = nil
 		} else if folderIndex == 0 && hasParent == 1 && sfClient.SelectedFolder.ParentItemID != nil {
@@ -105,19 +120,35 @@ func main() {
 	}
 }
 
-func promptForIntInRange(prompt string, lowerbound int, upperbound int) (int, error) {
-	for {
-		out, err := promptForInt(prompt)
-		if err != nil {
-			println(err.Error())
-			return out, err
-		}
-		if out < lowerbound || out > upperbound {
-			println("value out of range")
-			return out, err
-		}
-		return out, nil
+func promptForIntInRangeOrCommand(prompt string, lowerbound int, upperbound int, commands map[string]string) (int, string, error) {
+	out, err := promptForString(prompt)
+	if err != nil {
+		return 0, "nil", err
 	}
+	// is it an int
+	outIndex, err := strconv.Atoi(out)
+	if err == nil {
+		if outIndex < lowerbound || outIndex > upperbound {
+			return 0, "nil", errors.New("value out of range")
+		}
+		return outIndex, "nil", nil
+	}
+
+	if _, found := commands[out]; found {
+		return 0, out, nil
+	}
+	return 0, "nil", errors.New("invalid command")
+}
+
+func promptForIntInRange(prompt string, lowerbound int, upperbound int) (int, error) {
+	out, err := promptForInt(prompt)
+	if err != nil {
+		return out, err
+	}
+	if out < lowerbound || out > upperbound {
+		return out, errors.New("value out of range")
+	}
+	return out, nil
 }
 
 func promptForInt(prompt string) (int, error) {

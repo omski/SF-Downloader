@@ -8,12 +8,15 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/inancgumus/screen"
+	"github.com/omski/SF-Downloader/api"
 	"github.com/omski/SF-Downloader/client"
 )
 
 func main() {
+	screen.Clear()
 	sfClient := new(client.SFClient)
-
+	// Login
 	for {
 		user, _ := promptForString("SF user")
 		password, _ := promptForString("SF password")
@@ -24,31 +27,41 @@ func main() {
 		}
 		break
 	}
-
+	// Load inventory
 	err := sfClient.LoadInventory()
 	if err != nil {
 		println(err.Error())
 	}
+	// select from inventory
+	var items []api.FDItem
+	for {
+		screen.Clear()
+		shownPupils := 0
 
-	shownPupils := 0
-	for i := 0; i < len(sfClient.Pupils); i++ {
-		if sfClient.Pupils[i].ItemType == "School" {
+		for i := 0; i < len(sfClient.Pupils); i++ {
+			if sfClient.Pupils[i].ItemType == "School" {
+				continue
+			}
+			fmt.Printf("[%v] = %v, %v \n", shownPupils, sfClient.Pupils[i].Name, sfClient.Pupils[i].SchoolClassName)
+			shownPupils++
+		}
+		pupilsIndex, err := promptForIntInRange(fmt.Sprintf("select pupil [%v-%v]", 0, shownPupils-1), 0, shownPupils-1)
+		if err != nil {
 			continue
 		}
-		fmt.Printf("[%v] = %v, %v \n", shownPupils, sfClient.Pupils[i].Name, sfClient.Pupils[i].SchoolClassName)
-		shownPupils++
+		sfClient.SelectedPupil = &sfClient.Pupils[pupilsIndex]
+		fmt.Printf("selected pupil %v \n", sfClient.SelectedPupil.Name)
+		break
 	}
-	pupilsIndex := promptForIntInRange(fmt.Sprintf("select pupil [%v-%v]", 0, shownPupils-1), 0, shownPupils-1)
-	fmt.Printf("selected index %v \n", pupilsIndex)
-	sfClient.SelectedPupil = &sfClient.Pupils[pupilsIndex]
-
-	fmt.Printf("selected %v\n", sfClient.SelectedPupil.Name)
-
-	items, err := sfClient.LoadFDItems(nil)
+	// Load FD root items
+	println("loading FD root folder...")
+	items, err = sfClient.LoadFDItems(nil)
 	if err != nil {
-		println(err.Error())
+		println("failed to load FD root > " + err.Error())
 	}
+	// select folders
 	for {
+		screen.Clear()
 		hasParent := 0
 		if sfClient.SelectedFolder != nil {
 			fmt.Println("[0] ..")
@@ -64,7 +77,10 @@ func main() {
 			}
 		}
 
-		folderIndex := promptForIntInRange(fmt.Sprintf("select folder [%v-%v]", 0, c), 0, c)
+		folderIndex, err := promptForIntInRange(fmt.Sprintf("select folder [%v-%v]", 0, c), 0, c)
+		if err != nil {
+			continue
+		}
 		fmt.Printf("selected index %v \n", folderIndex)
 		if folderIndex == 0 && hasParent == 1 && sfClient.SelectedFolder.ParentItemID == nil {
 			sfClient.SelectedFolder = nil
@@ -89,18 +105,18 @@ func main() {
 	}
 }
 
-func promptForIntInRange(prompt string, lowerbound int, upperbound int) int {
+func promptForIntInRange(prompt string, lowerbound int, upperbound int) (int, error) {
 	for {
 		out, err := promptForInt(prompt)
 		if err != nil {
 			println(err.Error())
-			continue
+			return out, err
 		}
 		if out < lowerbound || out > upperbound {
 			println("value out of range")
-			continue
+			return out, err
 		}
-		return out
+		return out, nil
 	}
 }
 

@@ -15,10 +15,10 @@ jobs:
       with:
         go-version: 1.15
       run: |
-        go get -u github.com/inancgumus/screen
 
     - name: Build
       run: |
+        go mod download
         env GOOS=darwin GOARCH=amd64 go build -v -o ${{ github.workspace }}/bin/SF-Downloader.macos_amd64 ./downloader.go
         env GOOS=linux GOARCH=amd64 go build -v -o ${{ github.workspace }}/bin/SF-Downloader.linux_amd64 ./downloader.go        
         env GOOS=windows GOARCH=amd64 go build -v -o ${{ github.workspace }}/bin/SF-Downloader.windows_amd64.exe ./downloader.go        

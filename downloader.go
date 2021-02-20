@@ -17,53 +17,17 @@ func main() {
 	screen.Clear()
 	sfClient := new(client.SFClient)
 	// Login
-	for {
-		user, _ := promptForString("SF user")
-		password, _ := promptForString("SF password")
-		err := sfClient.Login(user, password)
-		if err != nil {
-			println("login failed > " + err.Error())
-			continue
-		}
-		break
-	}
+	login(sfClient)
 	// Load inventory
-	err := sfClient.LoadInventory()
-	if err != nil {
-		println(err.Error())
-	}
-	// select from inventory
+	loadInventory(sfClient)
+	// select from inventory / pupils
 	var items []api.FDItem
-	for {
-		screen.Clear()
-		shownPupils := 0
-
-		for i := 0; i < len(sfClient.Pupils); i++ {
-			if sfClient.Pupils[i].ItemType == "School" {
-				continue
-			}
-			fmt.Printf("[%v] = %v, %v \n", shownPupils, sfClient.Pupils[i].Name, sfClient.Pupils[i].SchoolClassName)
-			shownPupils++
-		}
-		pupilsIndex, err := promptForIntInRange(fmt.Sprintf("select pupil [%v-%v]", 0, shownPupils-1), 0, shownPupils-1)
-		if err != nil {
-			continue
-		}
-		sfClient.SelectedPupil = &sfClient.Pupils[pupilsIndex]
-		fmt.Printf("selected pupil %v \n", sfClient.SelectedPupil.Name)
-		break
-	}
+	selectPupil(sfClient)
 	// Load FD root items
-	println("loading FD root folder...")
-	items, err = sfClient.LoadFDItems(nil)
-	if err != nil {
-		println("failed to load FD root > " + err.Error())
-	}
+	items = loadFDroot(sfClient)
 	// select folders
-
 	commands := make(map[string]string)
-	commands["d"] = "download this folder"
-	commands["r"] = "download this folder repeatedly"
+	commands["s"] = "select current folder"
 	commands["x"] = "exit"
 
 	for {
@@ -85,7 +49,7 @@ func main() {
 		for i, v := range commands {
 			fmt.Printf("[%v] command: %v\n", i, v)
 		}
-		folderIndex, commandIndex, err := promptForIntInRangeOrCommand(fmt.Sprintf("select folder [%v-%v] or command", 0, c), 0, c, commands)
+		folderIndex, commandIndex, err := promptForIntInRangeOrCommand(fmt.Sprintf("select folder [%v-%v] or select current folder", 0, c), 0, c, commands)
 		if err != nil {
 			continue
 		}
@@ -120,6 +84,41 @@ func main() {
 	}
 }
 
+func loadFDroot(sfClient *client.SFClient) []api.FDItem {
+	for {
+		println("loading FD root folder...")
+		items, err := sfClient.LoadFDItems(nil)
+		if err != nil {
+			println("failed to load FD root > " + err.Error())
+			continue
+		}
+		return items
+	}
+}
+
+func selectPupil(sfClient *client.SFClient) {
+	for {
+		screen.Clear()
+		shownPupils := 0
+
+		for i := 0; i < len(sfClient.Pupils); i++ {
+			if sfClient.Pupils[i].ItemType == "School" {
+				continue
+			}
+			fmt.Printf("[%v] = %v, %v \n", shownPupils, sfClient.Pupils[i].Name, sfClient.Pupils[i].SchoolClassName)
+			shownPupils++
+		}
+		pupilsIndex, err := promptForIntInRange(fmt.Sprintf("select pupil [%v-%v]", 0, shownPupils-1), 0, shownPupils-1)
+		if err != nil {
+			println("something went wrong > " + err.Error())
+			continue
+		}
+		sfClient.SelectedPupil = &sfClient.Pupils[pupilsIndex]
+		fmt.Printf("selected pupil %v \n", sfClient.SelectedPupil.Name)
+		break
+	}
+}
+
 func promptForIntInRangeOrCommand(prompt string, lowerbound int, upperbound int, commands map[string]string) (int, string, error) {
 	out, err := promptForString(prompt)
 	if err != nil {
@@ -138,6 +137,30 @@ func promptForIntInRangeOrCommand(prompt string, lowerbound int, upperbound int,
 		return 0, out, nil
 	}
 	return 0, "nil", errors.New("invalid command")
+}
+
+func login(sfClient *client.SFClient) {
+	for {
+		user, _ := promptForString("SF user")
+		password, _ := promptForString("SF password")
+		err := sfClient.Login(user, password)
+		if err != nil {
+			println("login failed > " + err.Error())
+			continue
+		}
+		break
+	}
+}
+
+func loadInventory(sfClient *client.SFClient) {
+	for {
+		err := sfClient.LoadInventory()
+		if err != nil {
+			println("failed to load inventory > " + err.Error())
+			continue
+		}
+		break
+	}
 }
 
 func promptForIntInRange(prompt string, lowerbound int, upperbound int) (int, error) {

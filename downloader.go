@@ -25,7 +25,8 @@ func main() {
 	selectPupil(sfClient)
 	// Load FD root items
 	items = loadFDroot(sfClient)
-	// select folders
+	// select folder
+	
 	commands := make(map[string]string)
 	commands["s"] = "select current folder"
 	commands["x"] = "exit"
@@ -119,26 +120,6 @@ func selectPupil(sfClient *client.SFClient) {
 	}
 }
 
-func promptForIntInRangeOrCommand(prompt string, lowerbound int, upperbound int, commands map[string]string) (int, string, error) {
-	out, err := promptForString(prompt)
-	if err != nil {
-		return 0, "nil", err
-	}
-	// is it an int
-	outIndex, err := strconv.Atoi(out)
-	if err == nil {
-		if outIndex < lowerbound || outIndex > upperbound {
-			return 0, "nil", errors.New("value out of range")
-		}
-		return outIndex, "nil", nil
-	}
-
-	if _, found := commands[out]; found {
-		return 0, out, nil
-	}
-	return 0, "nil", errors.New("invalid command")
-}
-
 func login(sfClient *client.SFClient) {
 	for {
 		user, _ := promptForString("SF user")
@@ -161,6 +142,26 @@ func loadInventory(sfClient *client.SFClient) {
 		}
 		break
 	}
+}
+
+func promptForIntInRangeOrCommand(prompt string, lowerbound int, upperbound int, commands map[string]string) (int, string, error) {
+	out, err := promptForString(prompt)
+	if err != nil {
+		return 0, "nil", err
+	}
+	// is it an int
+	outIndex, err := strconv.Atoi(out)
+	if err == nil {
+		if outIndex < lowerbound || outIndex > upperbound {
+			return 0, "nil", errors.New("value out of range")
+		}
+		return outIndex, "nil", nil
+	}
+
+	if _, found := commands[out]; found {
+		return 0, out, nil
+	}
+	return 0, "nil", errors.New("invalid command")
 }
 
 func promptForIntInRange(prompt string, lowerbound int, upperbound int) (int, error) {

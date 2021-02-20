@@ -8,35 +8,6 @@ import (
 	"strings"
 )
 
-// Pupil type
-type Pupil struct {
-	Name              string
-	ItemType          string
-	SchoolClassID     string
-	SchoolClassName   string
-	SchoolID          string
-	HasUnreadMessages bool
-	ID                string
-}
-
-type FDItem struct {
-	Name                 string
-	FullPath             string
-	CreatorName          string
-	ItemType             string
-	ItemSubType          string
-	TeachersAccessType   string
-	ParentsAccessType    string
-	NumberOfParticipants int
-	HasPreview           bool
-	Size                 int
-	ParentItemID         *string
-	SchoolClassID        string
-	PupilID              string
-	AccessType           string
-	ID                   string
-}
-
 // Login returns auth token
 func Login(user string, password string) (string, error) {
 

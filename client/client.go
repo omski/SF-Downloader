@@ -63,11 +63,24 @@ func (sf *SFClient) LoadFDItem(itemID string) (*api.FDItem, error) {
 		return nil, errors.New("you must login first")
 	}
 	if sf.SelectedPupil == nil {
-		return nil, errors.New("you must login first")
+		return nil, errors.New("you must select something form your inventory first")
 	}
 	item, err := api.LoadFDItem(*sf.AuthToken, itemID, *sf.SelectedPupil)
 	if err != nil {
 		return nil, err
 	}
 	return item, nil
+}
+
+// DownloadFDItem downloads a FD item
+func (sf *SFClient) DownloadFDItem(item api.FDItem, filePathName string) (int64, error) {
+	written := int64(-1)
+	if sf.AuthToken == nil {
+		return written, errors.New("you must login first")
+	}
+	if sf.SelectedPupil == nil {
+		return written, errors.New("you must select something form your inventory first")
+	}
+	written, err := api.DownloadFDItem(*sf.AuthToken, *item.ParentItemID, item.ID, filePathName)
+	return written, err
 }

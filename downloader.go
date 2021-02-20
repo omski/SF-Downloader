@@ -4,7 +4,9 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -26,10 +28,61 @@ func main() {
 	// Load FD root items
 	items = loadFDroot(sfClient)
 	// select folder
-	
+
+	item, command := selectFolder(sfClient, items)
+
+	if command == "x" {
+		println("bye bye...")
+		os.Exit(0)
+	}
+	if command == "s" {
+		items, err := sfClient.LoadFDItems(&item)
+		if err != nil {
+			println("failed to load contents of selected folder >" + err.Error())
+
+		}
+		dir, err := os.Getwd()
+		if err != nil {
+			log.Fatal(err)
+		}
+		downloadRoot := filepath.Join(filepath.Clean(dir), "FD_downloads")
+		err = makePath(downloadRoot)
+		if err != nil {
+			println("failed to create path > " + err.Error())
+		}
+		for _, v := range items {
+			filePathName := filepath.Join(downloadRoot, v.FullPath)
+			err = makePath(filepath.Dir(filePathName))
+			if err != nil {
+				println("failed to create path > " + err.Error())
+			}
+			written, err := sfClient.DownloadFDItem(v, filePathName)
+			if err != nil {
+				fmt.Printf("failed to download [%v] to [%v] > %v \n", v.Name, filePathName, err.Error())
+				continue
+			}
+			fmt.Printf("downloaded %v bytes to %v\n", written, filePathName)
+		}
+	}
+}
+
+func makePath(path string) error {
+	_, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		err = os.MkdirAll(path, 0777)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func selectFolder(sfClient *client.SFClient, items []api.FDItem) (api.FDItem, string) {
 	commands := make(map[string]string)
 	commands["s"] = "select current folder"
 	commands["x"] = "exit"
+
+	var selectedCommand string
 
 	for {
 		screen.Clear()
@@ -50,16 +103,17 @@ func main() {
 		for i, v := range commands {
 			fmt.Printf("[%v] command: %v\n", i, v)
 		}
-		folderIndex, commandIndex, err := promptForIntInRangeOrCommand(fmt.Sprintf("select folder [%v-%v] or select current folder", 0, c), 0, c, commands)
+		folderIndex, commandIndex, err := promptForIntInRangeOrCommand(fmt.Sprintf("select folder [%v-%v] or select a command", 0, c), 0, c, commands)
 		if err != nil {
 			continue
 		}
 
 		if commandIndex != "nil" {
-			fmt.Printf("selected command %v \n", commands[commandIndex])
+			fmt.Printf("selected command: %v \n", commands[commandIndex])
+			selectedCommand = commandIndex
 			break
 		} else {
-			fmt.Printf("selected index %v \n", folderIndex)
+			fmt.Printf("selected index: %v \n", folderIndex)
 		}
 
 		if folderIndex == 0 && hasParent == 1 && sfClient.SelectedFolder.ParentItemID == nil {
@@ -83,6 +137,7 @@ func main() {
 			items = subItems
 		}
 	}
+	return *sfClient.SelectedFolder, selectedCommand
 }
 
 func loadFDroot(sfClient *client.SFClient) []api.FDItem {
@@ -115,7 +170,7 @@ func selectPupil(sfClient *client.SFClient) {
 			continue
 		}
 		sfClient.SelectedPupil = &sfClient.Pupils[pupilsIndex]
-		fmt.Printf("selected pupil %v \n", sfClient.SelectedPupil.Name)
+		fmt.Printf("selected pupil: %v \n", sfClient.SelectedPupil.Name)
 		break
 	}
 }

@@ -3,8 +3,10 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -62,7 +64,7 @@ func addAuthHeader(req *http.Request, authToken string) {
 	req.Header.Add("X-ZUMO-AUTH", authToken)
 }
 
-// Inventory loads the inventory
+// Inventory loads the users inventory
 func Inventory(authToken string) ([]Pupil, error) {
 
 	url := "https://api.schoolfox.com/api/Common/Inventory"
@@ -90,7 +92,7 @@ func Inventory(authToken string) ([]Pupil, error) {
 	return inventory, nil
 }
 
-// LoadFDItems
+// LoadFDItems loads items in a FD folder
 func LoadFDItems(authToken string, parentItemID string, pupil Pupil) ([]FDItem, error) {
 	baseURL := "https://api.schoolfox.com/tables/FoxDriveItems"
 
@@ -131,6 +133,7 @@ func LoadFDItems(authToken string, parentItemID string, pupil Pupil) ([]FDItem, 
 	return fdResult.Results, nil
 }
 
+// LoadFDItem loads a single FDItem
 func LoadFDItem(authToken string, itemID string, pupil Pupil) (*FDItem, error) {
 	url := fmt.Sprintf("https://api.schoolfox.com/api/FoxDriveItems/%v/Item/%v?pupilId=%v", pupil.SchoolClassID, itemID, pupil.ID)
 	req, _ := http.NewRequest("GET", url, nil)
@@ -157,4 +160,32 @@ func LoadFDItem(authToken string, itemID string, pupil Pupil) (*FDItem, error) {
 	}
 
 	return &fdResult, nil
+}
+
+// DownloadFDFile downloads a FD file
+func DownloadFDItem(authToken string, parentItemID string, downloadItemID string, filePathName string) (int64, error) {
+
+	url := fmt.Sprintf("https://api.schoolfox.com/api/FoxDriveItems/%v/DownloadFile/%v", parentItemID, downloadItemID)
+
+	req, _ := http.NewRequest("GET", url, nil)
+
+	addStdHeaders(req)
+	addAuthHeader(req, authToken)
+
+	written := int64(-1)
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return written, err
+	}
+	defer res.Body.Close()
+	// Create the file
+	out, err := os.Create(filePathName)
+	if err != nil {
+		return written, err
+	}
+	defer out.Close()
+
+	// Write the body to file
+	written, err = io.Copy(out, res.Body)
+	return written, err
 }

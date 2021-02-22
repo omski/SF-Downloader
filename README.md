@@ -5,8 +5,8 @@ SF-Downloader dient für den vereinfachten Umgang mit vielen Dateien in Schoolfo
 
 ## Beschreibung
 
-FD-Downloader ist ein Kommandozeilenprogramm geschrieben in Go <https://golang.org/>.
-Bei der Veröffentlichung ([Releases](<https://github.com/omski/SF-Downloader/releases>)) neuer Versionen werden ausführbare Versionen für die Betriebssysteme Windows, MacOS und Linux erstellt.
+FD-Downloader ist ein Kommandozeilenprogramm geschrieben in Go <https://golang.org/>.</br>
+Bei der Veröffentlichung ([Releases](<https://github.com/omski/SF-Downloader/releases>)) neuer Versionen von SF-Downloader werden ausführbare Dateien für die Betriebssysteme Windows, MacOS und Linux erstellt.
 
 ## Anleitung
 
@@ -26,6 +26,7 @@ Man kann nun in Unterverzeichnisse navigieren oder das aktuell dargestellte Verz
 ![Select Command](./assets/select_command.png)
 * Nach Ausführung des Kommandos wird das Programm beendet.</br>
 ![End](./assets/end.png)
+
 ## geplante Features
 
 Zyklisches Ausführen des gewählten Kommandos um das gewählte Verzeichnis über einen längeren Zeitraum automatisch zu synchronisieren.

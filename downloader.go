@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/inancgumus/screen"
 	"github.com/omski/SF-Downloader/api"
@@ -36,6 +37,8 @@ func main() {
 		os.Exit(0)
 	}
 	if command == "s" {
+		endGame := "nil"
+
 		commands := make(map[string]string)
 		commands["1"] = "download items of selected folder only"
 		commands["2"] = "download items of selected folder only and delete files after successful download"
@@ -51,15 +54,48 @@ func main() {
 			command = c
 			break
 		}
+		var err error
 		switch command {
 		case "1":
-			downloadItems(sfClient, sfClient.SelectedFolder, false, false)
+			err = downloadItems(sfClient, sfClient.SelectedFolder, false, false)
 		case "2":
-			downloadItems(sfClient, sfClient.SelectedFolder, true, false)
+			err = downloadItems(sfClient, sfClient.SelectedFolder, true, false)
 		case "3":
-			downloadItems(sfClient, sfClient.SelectedFolder, false, true)
+			err = downloadItems(sfClient, sfClient.SelectedFolder, false, true)
 		case "4":
-			downloadItems(sfClient, sfClient.SelectedFolder, true, true)
+			err = downloadItems(sfClient, sfClient.SelectedFolder, true, true)
+		}
+		if err != nil {
+			println("something went seriously wrong > " + err.Error())
+		} else {
+			if endGame == "nil" {
+				for {
+					commands := make(map[string]string)
+					commands["1"] = "save current settings"
+					commands["2"] = "restart command every 15 minutes"
+					commands["3"] = "exit"
+
+					for {
+						c, err := selectCommand("select command: ", commands)
+						if err != nil {
+							println(err.Error())
+							continue
+						}
+						endGame = c
+						break
+					}
+					break
+				}
+			}
+			switch endGame {
+			case "1":
+				err = sfClient.SaveState()
+			case "2":
+				time.Sleep(15 * time.Minute)
+			case "3":
+				println("bye bye...")
+				os.Exit(0)
+			}
 		}
 	}
 }
@@ -233,11 +269,11 @@ func selectPupil(sfClient *client.SFClient) {
 		screen.Clear()
 		shownPupils := 0
 
-		for i := 0; i < len(sfClient.Pupils); i++ {
-			if sfClient.Pupils[i].ItemType == "School" {
+		for i := 0; i < len(sfClient.InventoryItems); i++ {
+			if sfClient.InventoryItems[i].ItemType == "School" {
 				continue
 			}
-			fmt.Printf("[%v] = %v, %v \n", shownPupils, sfClient.Pupils[i].Name, sfClient.Pupils[i].SchoolClassName)
+			fmt.Printf("[%v] = %v, %v \n", shownPupils, sfClient.InventoryItems[i].Name, sfClient.InventoryItems[i].SchoolClassName)
 			shownPupils++
 		}
 		pupilsIndex, err := promptForIntInRange(fmt.Sprintf("select pupil [%v-%v]", 0, shownPupils-1), 0, shownPupils-1)
@@ -245,8 +281,8 @@ func selectPupil(sfClient *client.SFClient) {
 			println("something went wrong > " + err.Error())
 			continue
 		}
-		sfClient.SelectedPupil = &sfClient.Pupils[pupilsIndex]
-		fmt.Printf("selected pupil: %v \n", sfClient.SelectedPupil.Name)
+		sfClient.SelectedInventoryItem = &sfClient.InventoryItems[pupilsIndex]
+		fmt.Printf("selected pupil: %v \n", sfClient.SelectedInventoryItem.Name)
 		break
 	}
 }

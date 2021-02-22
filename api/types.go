@@ -1,7 +1,7 @@
 package api
 
-// Pupil type
-type Pupil struct {
+// InventoryItem type
+type InventoryItem struct {
 	Name                          string `json:"name"`
 	ItemType                      string `json:"itemType"`
 	ApplicationType               string `json:"applicationType"`

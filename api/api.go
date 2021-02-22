@@ -65,7 +65,7 @@ func addAuthHeader(req *http.Request, authToken string) {
 }
 
 // Inventory loads the users inventory
-func Inventory(authToken string) ([]Pupil, error) {
+func Inventory(authToken string) ([]InventoryItem, error) {
 
 	url := "https://api.schoolfox.com/api/Common/Inventory"
 
@@ -79,7 +79,7 @@ func Inventory(authToken string) ([]Pupil, error) {
 		return nil, err
 	}
 	defer res.Body.Close()
-	var inventory []Pupil
+	var inventory []InventoryItem
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
@@ -93,17 +93,20 @@ func Inventory(authToken string) ([]Pupil, error) {
 }
 
 // LoadFDItems loads items in a FD folder
-func LoadFDItems(authToken string, parentItemID string, pupil Pupil) ([]FDItem, error) {
+func LoadFDItems(authToken string, parentItemID string, pupil InventoryItem) ([]FDItem, error) {
 	baseURL := "https://api.schoolfox.com/tables/FoxDriveItems"
 
 	if parentItemID != "null" {
 		parentItemID = "%27" + parentItemID + "%27"
 	}
 
-	query := fmt.Sprintf("$count=true&$orderby=ItemType,+Name&$filter=SchoolClassId+eq+%%27%v%%27+and+ParentItemId+eq+%v+and+(PupilId+eq+null+or+PupilId+eq+%%27%v%%27)+and+Deleted+eq+false", pupil.SchoolClassID, parentItemID, pupil.ID)
+	query := fmt.Sprintf("$count=true&$orderby=ItemType,+Name&$filter=SchoolClassId+eq+%%27%v%%27+and+ParentItemId+eq+%v", pupil.SchoolClassID, parentItemID)
+	if strings.EqualFold(pupil.ItemType, "Pupil") {
+		query = query + fmt.Sprintf("+and+(PupilId+eq+null+or+PupilId+eq+%%27%v%%27)", pupil.ID)
+	}
+	query = query + "+and+Deleted+eq+false"
 
 	url := baseURL + "?" + query
-
 	req, _ := http.NewRequest("GET", url, nil)
 
 	addStdHeaders(req)
@@ -134,7 +137,10 @@ func LoadFDItems(authToken string, parentItemID string, pupil Pupil) ([]FDItem, 
 }
 
 // LoadFDItem loads a single FDItem
-func LoadFDItem(authToken string, itemID string, pupil Pupil) (*FDItem, error) {
+func LoadFDItem(authToken string, itemID string, pupil InventoryItem) (*FDItem, error) {
+
+	
+
 	url := fmt.Sprintf("https://api.schoolfox.com/api/FoxDriveItems/%v/Item/%v?pupilId=%v", pupil.SchoolClassID, itemID, pupil.ID)
 	req, _ := http.NewRequest("GET", url, nil)
 
@@ -162,7 +168,7 @@ func LoadFDItem(authToken string, itemID string, pupil Pupil) (*FDItem, error) {
 	return &fdResult, nil
 }
 
-// DownloadFDFile downloads a FD file
+// DownloadFDItem downloads a FD file
 func DownloadFDItem(authToken string, parentItemID string, downloadItemID string, filePathName string) (int64, error) {
 
 	url := fmt.Sprintf("https://api.schoolfox.com/api/FoxDriveItems/%v/DownloadFile/%v", parentItemID, downloadItemID)
@@ -190,6 +196,7 @@ func DownloadFDItem(authToken string, parentItemID string, downloadItemID string
 	return written, err
 }
 
+// DeleteFDItem delete an FD item
 func DeleteFDItem(authToken string, ItemID string) error {
 
 	url := fmt.Sprintf("https://api.schoolfox.com/tables/FoxDriveItems/%v", ItemID)

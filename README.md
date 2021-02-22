@@ -10,21 +10,21 @@ Bei der Veröffentlichung ([Releases](<https://github.com/omski/SF-Downloader/re
 
 ## Anleitung
 
-* Nach dem Start des Programm fordert es zur Eingabe des Schoolfox Benutzernamens und Passworts auf.
+* Nach dem Start des Programm fordert es zur Eingabe des Schoolfox Benutzernamens und Passworts auf.</br>
 ![Login](./assets/login.png)
 * Anschließend wird eine Liste des 'Inventars' dargestellt.
-Das Programm fordert zur Auswahl eines Inventareintrags aus.
+Das Programm fordert zur Auswahl eines Inventareintrags aus.</br>
 ![Select Pupil](./assets/select_pupil.png)
 Es werden nun alle Einträge des FoxDrive Hauptverzeichnisses (root) dargestellt.
-Man kann nun in Unterverzeichnisse navigieren oder das aktuell dargestellte Verzeichnis auswählen.
+Man kann nun in Unterverzeichnisse navigieren oder das aktuell dargestellte Verzeichnis auswählen.</br>
 ![Select Folder](./assets/select_folder.png)
 * Nachdem ein Verzeichnis ausgewählt wurde besteht die Option:
 1 - die Dateien des ausgewählten Verzeichnisses herunterzuladen
 2 - die Dateien des ausgewählten Verzeichnisses und aller Unterverzeichnisse herunterzuladen
 3 - die Dateien des ausgewählten Verzeichnisses herunterzuladen und nach erfolgreichem Download auf Foxdrive zu löschen
-4 - die Dateien des ausgewählten Verzeichnisses und aller Unterverzeichnisse herunterzuladen und nach erfolgreichem Download auf Foxdrive zu löschen
+4 - die Dateien des ausgewählten Verzeichnisses und aller Unterverzeichnisse herunterzuladen und nach erfolgreichem Download auf Foxdrive zu löschen</br>
 ![Select Command](./assets/select_command.png)
-* Nach Ausführung des Kommandos wird das Programm beendet.
+* Nach Ausführung des Kommandos wird das Programm beendet.</br>
 ![End](./assets/end.png)
 ## geplante Features
 

@@ -119,7 +119,7 @@ func downloadItems(sfClient *client.SFClient, item *api.FDItem, deleteAfterDownl
 		log.Fatal(err)
 		return err
 	}
-	downloadRoot := filepath.Join(filepath.Clean(dir), "FD_downloads")
+	downloadRoot := filepath.Join(filepath.Clean(dir), "FD_downloads", sfClient.SelectedInventoryItem.Name)
 	err = makePath(downloadRoot)
 	if err != nil {
 		println("failed to create download root path > " + err.Error())

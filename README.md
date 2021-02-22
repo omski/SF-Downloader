@@ -1,4 +1,31 @@
 # SF-Downloader
 ![GitHub](https://img.shields.io/github/license/omski/SF-Downloader?style=for-the-badge) ![GitHub all releases](https://img.shields.io/github/downloads/omski/SF-Downloader/total?style=for-the-badge) ![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/omski/SF-Downloader?include_prereleases&style=for-the-badge) ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/omski/SF-Downloader/Go?style=for-the-badge) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/omski/SF-Downloader?style=for-the-badge)
 
-Download all contents from a specified FD in SF
+SF-Downloader dient für den vereinfachten Umgang mit vielen Dateien in Schoolfox - FoxDrive
+
+## Beschreibung
+
+FD-Download ist ein Kommandozeilenprogramm geschrieben in Go <https://golang.org/>.
+Bei der Veröffentlichung ([Releases](<https://github.com/omski/SF-Downloader/releases>)) neuer Versionen werden ausführbare Versionen für die Betriebssysteme Windows, MacOS und Linux erstellt.
+
+## Anleitung
+
+* Nach dem Start des Programm fordert es zur Eingabe des Schoolfox Benutzernamens und Passworts auf.
+![Login](./assets/login.png)
+* Anschließend wird eine Liste des 'Inventars' dargestellt.
+Das Programm fordert zur Auswahl eines Inventareintrags aus.
+![Select Pupil](./assets/select_pupil.png)
+Es werden nun alle Einträge des FoxDrive Hauptverzeichnisses (root) dargestellt.
+Man kann nun in Unterverzeichnisse navigieren oder das aktuell dargestellte Verzeichnis auswählen.
+![Select Folder](./assets/select_folder.png)
+* Nachdem ein Verzeichnis ausgewählt wurde besteht die Option:
+1 - die Dateien des ausgewählten Verzeichnisses herunterzuladen
+2 - die Dateien des ausgewählten Verzeichnisses und aller Unterverzeichnisse herunterzuladen
+3 - die Dateien des ausgewählten Verzeichnisses herunterzuladen und nach erfolgreichem Download auf Foxdrive zu löschen
+4 - die Dateien des ausgewählten Verzeichnisses und aller Unterverzeichnisse herunterzuladen und nach erfolgreichem Download auf Foxdrive zu löschen
+![Select Command](./assets/select_command.png)
+* Nach Ausführung des Kommandos wird das Programm beendet.
+![End](./assets/end.png)
+## geplante Features
+
+Zyklisches Ausführen des gewählten Kommandos um das gewählte Verzeichnis über einen längeren Zeitraum automatisch zu synchronisieren.

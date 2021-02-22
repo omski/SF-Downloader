@@ -189,3 +189,20 @@ func DownloadFDItem(authToken string, parentItemID string, downloadItemID string
 	written, err = io.Copy(out, res.Body)
 	return written, err
 }
+
+func DeleteFDItem(authToken string, ItemID string) error {
+
+	url := fmt.Sprintf("https://api.schoolfox.com/tables/FoxDriveItems/%v", ItemID)
+
+	req, _ := http.NewRequest("DELETE", url, nil)
+
+	addStdHeaders(req)
+	addAuthHeader(req, authToken)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+	return nil
+}

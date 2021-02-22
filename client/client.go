@@ -84,3 +84,12 @@ func (sf *SFClient) DownloadFDItem(item api.FDItem, filePathName string) (int64,
 	written, err := api.DownloadFDItem(*sf.AuthToken, *item.ParentItemID, item.ID, filePathName)
 	return written, err
 }
+
+// DeleteFDItem deletes a FD item
+func (sf *SFClient) DeleteFDItem(item api.FDItem) error {
+	if sf.AuthToken == nil {
+		return errors.New("you must login first")
+	}
+	err := api.DeleteFDItem(*sf.AuthToken, item.ID)
+	return err
+}

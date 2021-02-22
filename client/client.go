@@ -3,6 +3,7 @@ package client
 import (
 	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -10,11 +11,18 @@ import (
 	"github.com/omski/SF-Downloader/api"
 )
 
+// StateFileName name of the state file
+const StateFileName = ".fd-downloader_state"
+
+// DownloadRoot name of the download root dir
+const DownloadRoot = "FD_downloads"
+
 // SFClient
 type SFClient struct {
 	AuthToken             *string
 	SelectedInventoryItem *api.InventoryItem
 	SelectedFolder        *api.FDItem
+	SelectedCommand       *string
 
 	InventoryItems []api.InventoryItem
 }
@@ -115,7 +123,7 @@ func (sf *SFClient) SaveState() error {
 		log.Fatal(err)
 		return err
 	}
-	stateFileName := filepath.Join(filepath.Clean(dir), ".fd-downloader_state")
+	stateFileName := filepath.Join(filepath.Clean(dir), StateFileName)
 	out, err := os.Create(stateFileName)
 	if err != nil {
 		return err
@@ -124,5 +132,57 @@ func (sf *SFClient) SaveState() error {
 
 	// Write the body to file
 	_, err = out.Write(s)
+	return err
+}
+
+// RestoreState restores a previously saved state
+func RestoreState() (*SFClient, error) {
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+	stateFileName := filepath.Join(filepath.Clean(dir), StateFileName)
+
+	_, err = os.Stat(stateFileName)
+	if os.IsNotExist(err) {
+		return nil, err
+	}
+
+	file, err := os.Open(stateFileName)
+	if err != nil {
+		log.Print(err)
+		return nil, err
+	}
+	defer file.Close()
+	jsonContent, err := ioutil.ReadAll(file)
+	if err != nil {
+		log.Print(err)
+		return nil, err
+	}
+
+	var sfClient SFClient
+	err = json.Unmarshal(jsonContent, &sfClient)
+	if err != nil {
+		log.Print(err)
+		return nil, err
+	}
+
+	return &sfClient, err
+}
+
+// DeleteStateFile deletes the state file
+func DeleteStateFile() error {
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+	stateFileName := filepath.Join(filepath.Clean(dir), StateFileName)
+
+	_, err = os.Stat(stateFileName)
+	if os.IsNotExist(err) {
+		log.Println("no state file found at " + stateFileName)
+	}
+	err = os.Remove(stateFileName)
 	return err
 }

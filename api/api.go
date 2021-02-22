@@ -139,8 +139,6 @@ func LoadFDItems(authToken string, parentItemID string, pupil InventoryItem) ([]
 // LoadFDItem loads a single FDItem
 func LoadFDItem(authToken string, itemID string, pupil InventoryItem) (*FDItem, error) {
 
-	
-
 	url := fmt.Sprintf("https://api.schoolfox.com/api/FoxDriveItems/%v/Item/%v?pupilId=%v", pupil.SchoolClassID, itemID, pupil.ID)
 	req, _ := http.NewRequest("GET", url, nil)
 

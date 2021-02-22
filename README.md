@@ -5,7 +5,7 @@ SF-Downloader dient für den vereinfachten Umgang mit vielen Dateien in Schoolfo
 
 ## Beschreibung
 
-FD-Download ist ein Kommandozeilenprogramm geschrieben in Go <https://golang.org/>.
+FD-Downloader ist ein Kommandozeilenprogramm geschrieben in Go <https://golang.org/>.
 Bei der Veröffentlichung ([Releases](<https://github.com/omski/SF-Downloader/releases>)) neuer Versionen werden ausführbare Versionen für die Betriebssysteme Windows, MacOS und Linux erstellt.
 
 ## Anleitung

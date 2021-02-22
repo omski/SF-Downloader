@@ -28,42 +28,89 @@ func main() {
 	// Load FD root items
 	items = loadFDroot(sfClient)
 	// select folder
-
-	item, command := selectFolder(sfClient, items)
+	command := selectFolder(sfClient, items)
 
 	if command == "x" {
 		println("bye bye...")
 		os.Exit(0)
 	}
 	if command == "s" {
-		items, err := sfClient.LoadFDItems(&item)
-		if err != nil {
-			println("failed to load contents of selected folder >" + err.Error())
+		commands := make(map[string]string)
+		commands["l"] = "download items of selected folder only"
+		commands["d"] = "download items of selected folder only and delete files after successful download"
+		commands["r"] = "download items of selected folder and all subfolders"
+		commands["s"] = "download items of selected folder and all subfolders and delete files after successful download"
+		var command string
+		for {
+			c, err := selectCommand("select command: ", commands)
+			if err != nil {
+				println(err.Error())
+				continue
+			}
+			command = c
+			break
+		}
+		switch command {
+		case "l":
+			downloadItems(sfClient, sfClient.SelectedFolder, false, false)
+		case "d":
+			downloadItems(sfClient, sfClient.SelectedFolder, true, false)
+		case "r":
+			downloadItems(sfClient, sfClient.SelectedFolder, false, true)
+		case "s":
+			downloadItems(sfClient, sfClient.SelectedFolder, true, true)
+		}
+	}
+}
 
-		}
-		dir, err := os.Getwd()
-		if err != nil {
-			log.Fatal(err)
-		}
-		downloadRoot := filepath.Join(filepath.Clean(dir), "FD_downloads")
-		err = makePath(downloadRoot)
+func downloadItems(sfClient *client.SFClient, item *api.FDItem, deleteAfterDownload bool, recursive bool) error {
+	items, err := sfClient.LoadFDItems(item)
+	if err != nil {
+		println("failed to load contents of selected folder >" + err.Error())
+		return err
+	}
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+	downloadRoot := filepath.Join(filepath.Clean(dir), "FD_downloads")
+	err = makePath(downloadRoot)
+	if err != nil {
+		println("failed to create download root path > " + err.Error())
+		return err
+	}
+	for _, v := range items {
+		filePathName := filepath.Join(downloadRoot, v.FullPath)
+		err := makePath(filepath.Dir(filePathName))
 		if err != nil {
 			println("failed to create path > " + err.Error())
 		}
-		for _, v := range items {
-			filePathName := filepath.Join(downloadRoot, v.FullPath)
-			err = makePath(filepath.Dir(filePathName))
-			if err != nil {
-				println("failed to create path > " + err.Error())
-			}
+		if strings.EqualFold(v.ItemType, "file") {
 			written, err := sfClient.DownloadFDItem(v, filePathName)
 			if err != nil {
 				fmt.Printf("failed to download [%v] to [%v] > %v \n", v.Name, filePathName, err.Error())
 				continue
 			}
 			fmt.Printf("downloaded %v bytes to %v\n", written, filePathName)
+			if deleteAfterDownload {
+				err := sfClient.DeleteFDItem(v)
+				if err != nil {
+					fmt.Printf("failed to delete [%v] > %v \n", v.Name, err.Error())
+				}
+			}
+		} else if recursive {
+			err := makePath(filePathName)
+			if err != nil {
+				println("failed to create path > " + err.Error())
+				continue
+			}
+			fmt.Printf("created directory %v\n", filePathName)
+			// recurse into subdir
+			downloadItems(sfClient, &v, deleteAfterDownload, recursive)
 		}
 	}
+	return nil
 }
 
 func makePath(path string) error {
@@ -77,7 +124,7 @@ func makePath(path string) error {
 	return nil
 }
 
-func selectFolder(sfClient *client.SFClient, items []api.FDItem) (api.FDItem, string) {
+func selectFolder(sfClient *client.SFClient, items []api.FDItem) string {
 	commands := make(map[string]string)
 	commands["s"] = "select current folder"
 	commands["x"] = "exit"
@@ -137,7 +184,10 @@ func selectFolder(sfClient *client.SFClient, items []api.FDItem) (api.FDItem, st
 			items = subItems
 		}
 	}
-	return *sfClient.SelectedFolder, selectedCommand
+	if sfClient.SelectedFolder == nil {
+		return selectedCommand
+	}
+	return selectedCommand
 }
 
 func loadFDroot(sfClient *client.SFClient) []api.FDItem {
@@ -150,6 +200,20 @@ func loadFDroot(sfClient *client.SFClient) []api.FDItem {
 		}
 		return items
 	}
+}
+
+func selectCommand(prompt string, commands map[string]string) (string, error) {
+	for i, v := range commands {
+		fmt.Printf("[%v] command: %v\n", i, v)
+	}
+	out, err := promptForString(prompt)
+	if err != nil {
+		return "nil", err
+	}
+	if _, found := commands[out]; found {
+		return out, nil
+	}
+	return "nil", errors.New("invalid command")
 }
 
 func selectPupil(sfClient *client.SFClient) {

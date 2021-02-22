@@ -3,7 +3,7 @@
 ## v0.2.4
 
 - Login
-- Auswählen eines Schülers
+- Auswählen aus dem Inventar (Schüler, Lehrer, Klasse)
 - Auswählen einer Ablage
 - Download aller Dateien der ausgewählten Ablage
 - Download aller Dateien der ausgewählten Ablage und alle Unterablagen

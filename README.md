@@ -8,10 +8,15 @@ SF-Downloader dient für den vereinfachten Umgang mit vielen Dateien in Schoolfo
 FD-Downloader ist ein Kommandozeilenprogramm geschrieben in Go <https://golang.org/>.</br>
 Bei der Veröffentlichung ([Releases](<https://github.com/omski/SF-Downloader/releases>)) neuer Versionen von SF-Downloader werden ausführbare Dateien für die Betriebssysteme Windows, MacOS und Linux erstellt.
 
+![Release Binary Downloads](./assets/release_binary_downloads.png)
+
 Auf Linux und MacOS muss die heruntergeladene ausführbare Datei noch mit dem Befehl [`chmod`](https://de.wikipedia.org/wiki/Chmod) im Terminal ausführbar gemacht werden:
 ```
 chmod +x <Pfad zur heruntergeladenen Datei>
 ```
+
+![Terminal chmod](./assets/terminal_chmod.png)
+
 ## Anleitung
 
 * Nach dem Start des Programm fordert es zur Eingabe des Schoolfox Benutzernamens und Passworts auf.</br>

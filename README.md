@@ -15,7 +15,7 @@ Bei der Veröffentlichung ([Releases](<https://github.com/omski/SF-Downloader/re
 * Anschließend wird eine Liste des 'Inventars' dargestellt.
 Das Programm fordert zur Auswahl eines Inventareintrags aus.</br>
 ![Select Pupil](./assets/select_pupil.png)
-Es werden nun alle Einträge des FoxDrive Hauptverzeichnisses (root) dargestellt.
+* Es werden nun alle Einträge des FoxDrive Hauptverzeichnisses (root) dargestellt.
 Man kann nun in Unterverzeichnisse navigieren oder das aktuell dargestellte Verzeichnis auswählen.</br>
 ![Select Folder](./assets/select_folder.png)
 * Nachdem ein Verzeichnis ausgewählt wurde besteht die Option:</br>

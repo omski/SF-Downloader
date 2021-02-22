@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -36,10 +37,10 @@ func main() {
 	}
 	if command == "s" {
 		commands := make(map[string]string)
-		commands["l"] = "download items of selected folder only"
-		commands["d"] = "download items of selected folder only and delete files after successful download"
-		commands["r"] = "download items of selected folder and all subfolders"
-		commands["s"] = "download items of selected folder and all subfolders and delete files after successful download"
+		commands["1"] = "download items of selected folder only"
+		commands["2"] = "download items of selected folder only and delete files after successful download"
+		commands["3"] = "download items of selected folder and all subfolders"
+		commands["4"] = "download items of selected folder and all subfolders and delete files after successful download"
 		var command string
 		for {
 			c, err := selectCommand("select command: ", commands)
@@ -51,13 +52,13 @@ func main() {
 			break
 		}
 		switch command {
-		case "l":
+		case "1":
 			downloadItems(sfClient, sfClient.SelectedFolder, false, false)
-		case "d":
+		case "2":
 			downloadItems(sfClient, sfClient.SelectedFolder, true, false)
-		case "r":
+		case "3":
 			downloadItems(sfClient, sfClient.SelectedFolder, false, true)
-		case "s":
+		case "4":
 			downloadItems(sfClient, sfClient.SelectedFolder, true, true)
 		}
 	}
@@ -147,8 +148,13 @@ func selectFolder(sfClient *client.SFClient, items []api.FDItem) string {
 				c--
 			}
 		}
-		for i, v := range commands {
-			fmt.Printf("[%v] command: %v\n", i, v)
+		keys := make([]string, 0, len(commands))
+		for k := range commands {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			fmt.Printf("[%v] command: %v\n", k, commands[k])
 		}
 		folderIndex, commandIndex, err := promptForIntInRangeOrCommand(fmt.Sprintf("select folder [%v-%v] or select a command", 0, c), 0, c, commands)
 		if err != nil {
@@ -203,8 +209,14 @@ func loadFDroot(sfClient *client.SFClient) []api.FDItem {
 }
 
 func selectCommand(prompt string, commands map[string]string) (string, error) {
-	for i, v := range commands {
-		fmt.Printf("[%v] command: %v\n", i, v)
+	keys := make([]string, 0, len(commands))
+	for k := range commands {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		fmt.Printf("[%v] %v\n", k, commands[k])
 	}
 	out, err := promptForString(prompt)
 	if err != nil {

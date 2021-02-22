@@ -24,13 +24,15 @@ Man kann nun in Unterverzeichnisse navigieren oder das aktuell dargestellte Verz
 3 - die Dateien des ausgewählten Verzeichnisses herunterzuladen und nach erfolgreichem Download auf Foxdrive zu löschen</br>
 4 - die Dateien des ausgewählten Verzeichnisses und aller Unterverzeichnisse herunterzuladen und nach erfolgreichem Download auf Foxdrive zu löschen</br>
 ![Select Command](./assets/select_command.png)
-* Nach Ausführung des Kommandos wird das Programm beendet.</br>
-![End](./assets/end.png)
+* Nach Ausführung des Kommandos besteht die die Wahl zwischen folgenden Optionen:</br>
+1 - Speicher des aktuellen Zustands</br>
+2 - Wiederholen des gewählten Kommandos alle 15 Minuten</br>
+3 - Beenden des Programms</br>
+![End](./assets/select_endgame.png)
 
 ## geplante Features
 
-Zyklisches Ausführen des gewählten Kommandos um das gewählte Verzeichnis über einen längeren Zeitraum automatisch zu synchronisieren.
-
+Wiederherstellen eines gespeicherter Zustands.
 ## Haftungsausschluss
 
 Die Nutzung von SF-Downloader geschieht auf eigenes Risiko.

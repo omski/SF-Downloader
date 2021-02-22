@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/omski/SF-Downloader/api"
 )
@@ -83,8 +85,12 @@ func (sf *SFClient) DownloadFDItem(item api.FDItem, filePathName string) (int64,
 	if sf.SelectedInventoryItem == nil {
 		return written, errors.New("you must select something form your inventory first")
 	}
-	written, err := api.DownloadFDItem(*sf.AuthToken, *item.ParentItemID, item.ID, filePathName)
-	return written, err
+	_, err := os.Stat(filePathName)
+	if os.IsNotExist(err) {
+		written, err = api.DownloadFDItem(*sf.AuthToken, *item.ParentItemID, item.ID, filePathName)
+		return written, err
+	}
+	return written, nil
 }
 
 // DeleteFDItem deletes a FD item
@@ -104,5 +110,19 @@ func (sf *SFClient) SaveState() error {
 		return err
 	}
 	println(s)
-	return nil
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+	stateFileName := filepath.Join(filepath.Clean(dir), ".fd-downloader_state")
+	out, err := os.Create(stateFileName)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	// Write the body to file
+	_, err = out.Write(s)
+	return err
 }

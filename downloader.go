@@ -45,6 +45,7 @@ func main() {
 		commands["3"] = "download items of selected folder and all subfolders"
 		commands["4"] = "download items of selected folder and all subfolders and delete files after successful download"
 		var command string
+
 		for {
 			c, err := selectCommand("select command: ", commands)
 			if err != nil {
@@ -54,49 +55,56 @@ func main() {
 			command = c
 			break
 		}
-		var err error
-		switch command {
-		case "1":
-			err = downloadItems(sfClient, sfClient.SelectedFolder, false, false)
-		case "2":
-			err = downloadItems(sfClient, sfClient.SelectedFolder, true, false)
-		case "3":
-			err = downloadItems(sfClient, sfClient.SelectedFolder, false, true)
-		case "4":
-			err = downloadItems(sfClient, sfClient.SelectedFolder, true, true)
-		}
-		if err != nil {
-			println("something went seriously wrong > " + err.Error())
-		} else {
-			if endGame == "nil" {
-				for {
-					commands := make(map[string]string)
-					commands["1"] = "save current settings"
-					commands["2"] = "restart command every 15 minutes"
-					commands["3"] = "exit"
-
+		for {
+			var err error
+			println("start download...")
+			switch command {
+			case "1":
+				err = downloadItems(sfClient, sfClient.SelectedFolder, false, false)
+			case "2":
+				err = downloadItems(sfClient, sfClient.SelectedFolder, true, false)
+			case "3":
+				err = downloadItems(sfClient, sfClient.SelectedFolder, false, true)
+			case "4":
+				err = downloadItems(sfClient, sfClient.SelectedFolder, true, true)
+			}
+			println("download finished")
+			if err != nil {
+				println("something went seriously wrong > " + err.Error())
+			} else {
+				if endGame == "nil" {
 					for {
-						c, err := selectCommand("select command: ", commands)
-						if err != nil {
-							println(err.Error())
-							continue
+						commands := make(map[string]string)
+						commands["1"] = "save current settings and exit"
+						commands["2"] = "restart command every 15 minutes"
+						commands["3"] = "exit"
+
+						for {
+							c, err := selectCommand("select command: ", commands)
+							if err != nil {
+								println(err.Error())
+								continue
+							}
+							endGame = c
+							break
 						}
-						endGame = c
 						break
 					}
-					break
+				}
+				switch endGame {
+				case "1":
+					err = sfClient.SaveState()
+					println("bye bye...")
+					os.Exit(0)
+				case "2":
+					time.Sleep(15 * time.Minute)
+				case "3":
+					println("bye bye...")
+					os.Exit(0)
 				}
 			}
-			switch endGame {
-			case "1":
-				err = sfClient.SaveState()
-			case "2":
-				time.Sleep(15 * time.Minute)
-			case "3":
-				println("bye bye...")
-				os.Exit(0)
-			}
 		}
+
 	}
 }
 
@@ -117,6 +125,7 @@ func downloadItems(sfClient *client.SFClient, item *api.FDItem, deleteAfterDownl
 		println("failed to create download root path > " + err.Error())
 		return err
 	}
+
 	for _, v := range items {
 		filePathName := filepath.Join(downloadRoot, v.FullPath)
 		err := makePath(filepath.Dir(filePathName))
@@ -129,7 +138,11 @@ func downloadItems(sfClient *client.SFClient, item *api.FDItem, deleteAfterDownl
 				fmt.Printf("failed to download [%v] to [%v] > %v \n", v.Name, filePathName, err.Error())
 				continue
 			}
-			fmt.Printf("downloaded %v bytes to %v\n", written, filePathName)
+			if written == -1 {
+				fmt.Printf("file %v already exist...\n", filePathName)
+			} else {
+				fmt.Printf("downloaded %v bytes to %v\n", written, filePathName)
+			}
 			if deleteAfterDownload {
 				err := sfClient.DeleteFDItem(v)
 				if err != nil {
@@ -142,11 +155,11 @@ func downloadItems(sfClient *client.SFClient, item *api.FDItem, deleteAfterDownl
 				println("failed to create path > " + err.Error())
 				continue
 			}
-			fmt.Printf("created directory %v\n", filePathName)
 			// recurse into subdir
 			downloadItems(sfClient, &v, deleteAfterDownload, recursive)
 		}
 	}
+
 	return nil
 }
 
@@ -157,6 +170,7 @@ func makePath(path string) error {
 		if err != nil {
 			return err
 		}
+		fmt.Printf("created directory %v\n", path)
 	}
 	return nil
 }

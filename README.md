@@ -29,3 +29,8 @@ Man kann nun in Unterverzeichnisse navigieren oder das aktuell dargestellte Verz
 ## geplante Features
 
 Zyklisches Ausführen des gewählten Kommandos um das gewählte Verzeichnis über einen längeren Zeitraum automatisch zu synchronisieren.
+
+## Haftungsausschluss
+
+Die Nutzung von SF-Downloader geschieht auf eigenes Risiko.
+Für Fehler, die durch die Nutzung dieses Tools entstehen, wird keine Haftung durch den Autor übernommen.

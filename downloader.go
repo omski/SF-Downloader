@@ -19,46 +19,70 @@ import (
 
 func main() {
 	screen.Clear()
-	sfClient := new(client.SFClient)
+	sfClient, err := client.RestoreState()
+	if err != nil {
+		sfClient = new(client.SFClient)
+	} else {
+		println("Previous saved state successfully restored.")
+	}
+	err = sfClient.LoadInventory()
+	if err != nil {
+		println("auth token expired...")
+	}
 	// Login
-	login(sfClient)
-	// Load inventory
-	loadInventory(sfClient)
-	// select from inventory / pupils
-	var items []api.FDItem
-	selectPupil(sfClient)
-	// Load FD root items
-	items = loadFDroot(sfClient)
-	// select folder
-	command := selectFolder(sfClient, items)
+	if err != nil || sfClient.AuthToken == nil {
+		login(sfClient)
+	}
 
-	if command == "x" {
-		println("bye bye...")
-		os.Exit(0)
+	// Load inventory
+	if sfClient.SelectedInventoryItem == nil {
+		loadInventory(sfClient)
+
+		// select from inventory / pupils
+		selectPupil(sfClient)
+	}
+
+	var items []api.FDItem
+	var command string
+	if sfClient.SelectedCommand == nil {
+		// Load FD root items
+		items = loadFDroot(sfClient)
+		// select folder
+		command = selectFolder(sfClient, items)
+
+		if command == "x" {
+			println("bye bye...")
+			os.Exit(0)
+		}
+	} else {
+		command = "s"
 	}
 	if command == "s" {
 		endGame := "nil"
 
-		commands := make(map[string]string)
-		commands["1"] = "download items of selected folder only"
-		commands["2"] = "download items of selected folder only and delete files after successful download"
-		commands["3"] = "download items of selected folder and all subfolders"
-		commands["4"] = "download items of selected folder and all subfolders and delete files after successful download"
-		var command string
+		if sfClient.SelectedCommand == nil {
+			commands := make(map[string]string)
+			commands["1"] = "download items of selected folder only"
+			commands["2"] = "download items of selected folder only and delete files after successful download"
+			commands["3"] = "download items of selected folder and all subfolders"
+			commands["4"] = "download items of selected folder and all subfolders and delete files after successful download"
 
-		for {
-			c, err := selectCommand("select command: ", commands)
-			if err != nil {
-				println(err.Error())
-				continue
+			for {
+				c, err := selectCommand("select command: ", commands)
+				if err != nil {
+					println(err.Error())
+					continue
+				}
+				sfClient.SelectedCommand = &c
+				break
 			}
-			command = c
-			break
+		} else {
+			command = *sfClient.SelectedCommand
 		}
 		for {
 			var err error
 			println("start download...")
-			switch command {
+			switch *sfClient.SelectedCommand {
 			case "1":
 				err = downloadItems(sfClient, sfClient.SelectedFolder, false, false)
 			case "2":
@@ -76,8 +100,9 @@ func main() {
 					for {
 						commands := make(map[string]string)
 						commands["1"] = "save current settings and exit"
-						commands["2"] = "restart command every 15 minutes"
-						commands["3"] = "exit"
+						commands["2"] = "delete saved state and exit"
+						commands["3"] = "restart command every 15 minutes"
+						commands["4"] = "exit"
 
 						for {
 							c, err := selectCommand("select command: ", commands)
@@ -97,8 +122,15 @@ func main() {
 					println("bye bye...")
 					os.Exit(0)
 				case "2":
-					time.Sleep(15 * time.Minute)
+					err = client.DeleteStateFile()
+					if err != nil {
+						println("failed to delete state file > " + err.Error())
+					}
+					println("bye bye...")
+					os.Exit(0)
 				case "3":
+					time.Sleep(15 * time.Minute)
+				case "4":
 					println("bye bye...")
 					os.Exit(0)
 				}
@@ -119,7 +151,7 @@ func downloadItems(sfClient *client.SFClient, item *api.FDItem, deleteAfterDownl
 		log.Fatal(err)
 		return err
 	}
-	downloadRoot := filepath.Join(filepath.Clean(dir), "FD_downloads", sfClient.SelectedInventoryItem.Name)
+	downloadRoot := filepath.Join(filepath.Clean(dir), client.DownloadRoot, sfClient.SelectedInventoryItem.Name)
 	err = makePath(downloadRoot)
 	if err != nil {
 		println("failed to create download root path > " + err.Error())

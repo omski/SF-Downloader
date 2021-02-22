@@ -18,10 +18,10 @@ Das Programm fordert zur Auswahl eines Inventareintrags aus.</br>
 Es werden nun alle Einträge des FoxDrive Hauptverzeichnisses (root) dargestellt.
 Man kann nun in Unterverzeichnisse navigieren oder das aktuell dargestellte Verzeichnis auswählen.</br>
 ![Select Folder](./assets/select_folder.png)
-* Nachdem ein Verzeichnis ausgewählt wurde besteht die Option:
-1 - die Dateien des ausgewählten Verzeichnisses herunterzuladen
-2 - die Dateien des ausgewählten Verzeichnisses und aller Unterverzeichnisse herunterzuladen
-3 - die Dateien des ausgewählten Verzeichnisses herunterzuladen und nach erfolgreichem Download auf Foxdrive zu löschen
+* Nachdem ein Verzeichnis ausgewählt wurde besteht die Option:</br>
+1 - die Dateien des ausgewählten Verzeichnisses herunterzuladen</br>
+2 - die Dateien des ausgewählten Verzeichnisses und aller Unterverzeichnisse herunterzuladen</br>
+3 - die Dateien des ausgewählten Verzeichnisses herunterzuladen und nach erfolgreichem Download auf Foxdrive zu löschen</br>
 4 - die Dateien des ausgewählten Verzeichnisses und aller Unterverzeichnisse herunterzuladen und nach erfolgreichem Download auf Foxdrive zu löschen</br>
 ![Select Command](./assets/select_command.png)
 * Nach Ausführung des Kommandos wird das Programm beendet.</br>

@@ -25,14 +25,18 @@ Man kann nun in Unterverzeichnisse navigieren oder das aktuell dargestellte Verz
 4 - die Dateien des ausgewählten Verzeichnisses und aller Unterverzeichnisse herunterzuladen und nach erfolgreichem Download auf Foxdrive zu löschen</br>
 ![Select Command](./assets/select_command.png)
 * Nach Ausführung des Kommandos besteht die die Wahl zwischen folgenden Optionen:</br>
-1 - Speicher des aktuellen Zustands</br>
-2 - Wiederholen des gewählten Kommandos alle 15 Minuten</br>
-3 - Beenden des Programms</br>
+1 - Speichern des aktuellen Zustands. Das Programm wird danach beendet.</br>
+Der gespeicherte Status wird beim nächsten Start des Programms automatisch geladen. Der ausgewählte Inventareintrag, die Ablage und das gewählte Kommanda werden sofort nach dem Start ausgewählt und ausgeführt. Sollte der Login abgelaufen sein, fordert das Programm zu einem erneuten Login auf.</br>
+2 - Löschen des gespeicherten Zustands. Das Programm wird danach beendet.</br>
+3 - Wiederholen des gewählten Kommandos alle 15 Minuten</br>
+4 - Beenden des Programms</br>
 ![End](./assets/select_endgame.png)
+
+
 
 ## geplante Features
 
-Wiederherstellen eines gespeicherter Zustands.
+--
 ## Haftungsausschluss
 
 Die Nutzung von SF-Downloader geschieht auf eigenes Risiko.

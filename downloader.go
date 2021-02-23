@@ -34,7 +34,7 @@ func main() {
 	// Login
 	if err != nil || sfClient.AuthToken == nil {
 		login(sfClient)
-		if (restored) {
+		if restored {
 			sfClient.SaveState()
 		}
 	}
@@ -42,9 +42,8 @@ func main() {
 	// Load inventory
 	if sfClient.SelectedInventoryItem == nil {
 		loadInventory(sfClient)
-
 		// select from inventory / pupils
-		selectPupil(sfClient)
+		selectFromInventory(sfClient)
 	}
 
 	var items []api.FDItem
@@ -55,14 +54,14 @@ func main() {
 		// select folder
 		command = selectFolder(sfClient, items)
 
-		if command == "x" {
+		if strings.EqualFold(command, "x") {
 			println("bye bye...")
 			os.Exit(0)
 		}
 	} else {
 		command = "s"
 	}
-	if command == "s" {
+	if strings.EqualFold(command, "s") {
 
 		endGame := "nil"
 
@@ -103,14 +102,13 @@ func main() {
 			if err != nil {
 				println("something went seriously wrong > " + err.Error())
 			} else {
-				if endGame == "nil" {
+				if strings.EqualFold(endGame, "nil") {
 					for {
 						commands := make(map[string]string)
 						commands["1"] = "save current settings and exit"
 						commands["2"] = "delete saved state and exit"
 						commands["3"] = "restart command every 15 minutes"
 						commands["4"] = "exit"
-
 						for {
 							c, err := selectCommand("select command: ", commands)
 							if err != nil {
@@ -150,7 +148,7 @@ func main() {
 func downloadItems(sfClient *client.SFClient, item *api.FDItem, deleteAfterDownload bool, recursive bool) error {
 	items, err := sfClient.LoadFDItems(item)
 	if err != nil {
-		println("failed to load contents of selected folder >" + err.Error())
+		println("failed to load contents of selected folder > " + err.Error())
 		return err
 	}
 	dir, err := os.Getwd()
@@ -182,7 +180,7 @@ func downloadItems(sfClient *client.SFClient, item *api.FDItem, deleteAfterDownl
 			} else {
 				fmt.Printf("downloaded %v bytes to %v\n", written, filePathName)
 			}
-			if deleteAfterDownload {
+			if deleteAfterDownload && !strings.EqualFold(v.AccessType, "ReadOnly") {
 				err := sfClient.DeleteFDItem(v)
 				if err != nil {
 					fmt.Printf("failed to delete [%v] > %v \n", v.Name, err.Error())
@@ -250,7 +248,7 @@ func selectFolder(sfClient *client.SFClient, items []api.FDItem) string {
 			continue
 		}
 
-		if commandIndex != "nil" {
+		if !strings.EqualFold( commandIndex, "nil") {
 			fmt.Printf("selected command: %v \n", commands[commandIndex])
 			selectedCommand = commandIndex
 			break
@@ -317,25 +315,24 @@ func selectCommand(prompt string, commands map[string]string) (string, error) {
 	return "nil", errors.New("invalid command")
 }
 
-func selectPupil(sfClient *client.SFClient) {
+func selectFromInventory(sfClient *client.SFClient) {
 	for {
 		screen.Clear()
 		shownPupils := 0
-
 		for i := 0; i < len(sfClient.InventoryItems); i++ {
-			if sfClient.InventoryItems[i].ItemType == "School" {
+			if strings.EqualFold(sfClient.InventoryItems[i].ItemType, "School") {
 				continue
 			}
 			fmt.Printf("[%v] = %v, %v \n", shownPupils, sfClient.InventoryItems[i].Name, sfClient.InventoryItems[i].SchoolClassName)
 			shownPupils++
 		}
-		pupilsIndex, err := promptForIntInRange(fmt.Sprintf("select pupil [%v-%v]", 0, shownPupils-1), 0, shownPupils-1)
+		pupilsIndex, err := promptForIntInRange(fmt.Sprintf("select pupil or class [%v-%v]", 0, shownPupils-1), 0, shownPupils-1)
 		if err != nil {
 			println("something went wrong > " + err.Error())
 			continue
 		}
 		sfClient.SelectedInventoryItem = &sfClient.InventoryItems[pupilsIndex]
-		fmt.Printf("selected pupil: %v \n", sfClient.SelectedInventoryItem.Name)
+		fmt.Printf("selected: %v \n", sfClient.SelectedInventoryItem.Name)
 		break
 	}
 }

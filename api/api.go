@@ -96,7 +96,7 @@ func Inventory(authToken string) ([]InventoryItem, error) {
 func LoadFDItems(authToken string, parentItemID string, pupil InventoryItem) ([]FDItem, error) {
 	baseURL := "https://api.schoolfox.com/tables/FoxDriveItems"
 
-	if parentItemID != "null" {
+	if !strings.EqualFold( parentItemID, "null") {
 		parentItemID = "%27" + parentItemID + "%27"
 	}
 

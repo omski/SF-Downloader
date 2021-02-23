@@ -75,7 +75,7 @@ func (sf *SFClient) LoadFDItem(itemID string) (*api.FDItem, error) {
 		return nil, errors.New("you must login first")
 	}
 	if sf.SelectedInventoryItem == nil {
-		return nil, errors.New("you must select something form your inventory first")
+		return nil, errors.New("you must select something from your inventory first")
 	}
 	item, err := api.LoadFDItem(*sf.AuthToken, itemID, *sf.SelectedInventoryItem)
 	if err != nil {
@@ -91,7 +91,7 @@ func (sf *SFClient) DownloadFDItem(item api.FDItem, filePathName string) (int64,
 		return written, errors.New("you must login first")
 	}
 	if sf.SelectedInventoryItem == nil {
-		return written, errors.New("you must select something form your inventory first")
+		return written, errors.New("you must select something from your inventory first")
 	}
 	_, err := os.Stat(filePathName)
 	if os.IsNotExist(err) {

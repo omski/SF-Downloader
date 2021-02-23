@@ -114,18 +114,19 @@ func (sf *SFClient) DeleteFDItem(item api.FDItem) error {
 func (sf *SFClient) SaveState() error {
 	s, err := json.Marshal(sf)
 	if err != nil {
-		log.Print(err)
+		log.Println(err)
 		return err
 	}
 	println(s)
 	dir, err := os.Getwd()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		return err
 	}
 	stateFileName := filepath.Join(filepath.Clean(dir), StateFileName)
 	out, err := os.Create(stateFileName)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	defer out.Close()

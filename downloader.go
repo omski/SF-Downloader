@@ -20,10 +20,12 @@ import (
 func main() {
 	screen.Clear()
 	sfClient, err := client.RestoreState()
+	var restored bool
 	if err != nil {
 		sfClient = new(client.SFClient)
 	} else {
 		println("Previous saved state successfully restored.")
+		restored = true
 	}
 	err = sfClient.LoadInventory()
 	if err != nil {
@@ -32,6 +34,9 @@ func main() {
 	// Login
 	if err != nil || sfClient.AuthToken == nil {
 		login(sfClient)
+		if (restored) {
+			sfClient.SaveState()
+		}
 	}
 
 	// Load inventory
@@ -58,6 +63,7 @@ func main() {
 		command = "s"
 	}
 	if command == "s" {
+
 		endGame := "nil"
 
 		if sfClient.SelectedCommand == nil {
@@ -80,6 +86,7 @@ func main() {
 			command = *sfClient.SelectedCommand
 		}
 		for {
+			screen.Clear()
 			var err error
 			println("start download...")
 			switch *sfClient.SelectedCommand {

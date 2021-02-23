@@ -34,7 +34,7 @@ Man kann nun in Unterverzeichnisse navigieren oder das aktuell dargestellte Verz
 4 - die Dateien des ausgewählten Verzeichnisses und aller Unterverzeichnisse herunterzuladen und nach erfolgreichem Download auf Foxdrive zu löschen (nicht ReadOnly)</br>
 ![Select Command](./assets/select_command.png)
 * Nach Ausführung des Kommandos besteht die die Wahl zwischen folgenden Optionen:</br>
-1 - Speichern des aktuellen Zustands. Das Programm wird danach beendet. Der Programmstatus wird in einer Datei, namens '.fd-downloader_state', im gleichen Verzeichnis gespeichert in dem sich SF_Downloader befindet. Der gespeicherte Status wird beim nächsten Start des Programms automatisch geladen. Der ausgewählte Inventareintrag, die Ablage und das gewählte Kommando werden sofort nach dem Start ausgewählt und ausgeführt. Sollte der Login abgelaufen sein, fordert das Programm zu einem erneuten Login auf.</br>
+1 - Speichern des aktuellen Zustands. Das Programm wird danach beendet. Der Programmstatus wird in einer Datei, namens '.fd-downloader_state', im gleichen Verzeichnis gespeichert in dem sich SF-Downloader befindet. Der gespeicherte Status wird beim nächsten Start des Programms automatisch geladen. Der ausgewählte Inventareintrag, die Ablage und das gewählte Kommando werden sofort nach dem Start ausgewählt und ausgeführt. Sollte der Login abgelaufen sein, fordert das Programm zu einem erneuten Login auf.</br>
 2 - Löschen des gespeicherten Zustands. Das Programm wird danach beendet.</br>
 3 - Wiederholen des gewählten Kommandos alle 15 Minuten</br>
 4 - Beenden des Programms</br>

@@ -144,31 +144,24 @@ func RestoreState() (*SFClient, error) {
 		return nil, err
 	}
 	stateFileName := filepath.Join(filepath.Clean(dir), StateFileName)
-
 	_, err = os.Stat(stateFileName)
 	if os.IsNotExist(err) {
 		return nil, err
 	}
-
 	file, err := os.Open(stateFileName)
 	if err != nil {
-		log.Print(err)
 		return nil, err
 	}
 	defer file.Close()
 	jsonContent, err := ioutil.ReadAll(file)
 	if err != nil {
-		log.Print(err)
 		return nil, err
 	}
-
 	var sfClient SFClient
 	err = json.Unmarshal(jsonContent, &sfClient)
 	if err != nil {
-		log.Print(err)
 		return nil, err
 	}
-
 	return &sfClient, err
 }
 
@@ -182,7 +175,7 @@ func DeleteStateFile() error {
 
 	_, err = os.Stat(stateFileName)
 	if os.IsNotExist(err) {
-		log.Println("no state file found at " + stateFileName)
+		return err
 	}
 	err = os.Remove(stateFileName)
 	return err

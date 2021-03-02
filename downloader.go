@@ -4,13 +4,14 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/inancgumus/screen"
 	"github.com/omski/SF-Downloader/api"
@@ -29,7 +30,7 @@ func main() {
 	}
 	err = sfClient.LoadInventory()
 	if err != nil {
-		println("auth token expired...")
+		println("Auth token expired...")
 	}
 	// Login
 	if err != nil || sfClient.AuthToken == nil {
@@ -67,13 +68,13 @@ func main() {
 
 		if sfClient.SelectedCommand == nil {
 			commands := make(map[string]string)
-			commands["1"] = "download items of selected folder only"
-			commands["2"] = "download items of selected folder only and delete files after successful download"
-			commands["3"] = "download items of selected folder and all subfolders"
-			commands["4"] = "download items of selected folder and all subfolders and delete files after successful download"
+			commands["1"] = "Download items of selected folder only"
+			commands["2"] = "Download items of selected folder only and delete files after successful download"
+			commands["3"] = "Download items of selected folder and all subfolders"
+			commands["4"] = "Download items of selected folder and all subfolders and delete files after successful download"
 
 			for {
-				c, err := selectCommand("select command: ", commands)
+				c, err := selectCommand("Select command: ", commands)
 				if err != nil {
 					println(err.Error())
 					continue
@@ -87,7 +88,7 @@ func main() {
 		for {
 			screen.Clear()
 			var err error
-			println("start download...")
+			println("Start download...")
 			switch *sfClient.SelectedCommand {
 			case "1":
 				err = downloadItems(sfClient, sfClient.SelectedFolder, false, false)
@@ -98,19 +99,19 @@ func main() {
 			case "4":
 				err = downloadItems(sfClient, sfClient.SelectedFolder, true, true)
 			}
-			println("download finished")
+			println("Download finished")
 			if err != nil {
-				println("something went seriously wrong > " + err.Error())
+				println("Something went seriously wrong > " + err.Error())
 			} else {
 				if strings.EqualFold(endGame, "nil") {
 					for {
 						commands := make(map[string]string)
-						commands["1"] = "save current settings and exit"
-						commands["2"] = "delete saved state and exit"
-						commands["3"] = "restart command every 15 minutes"
-						commands["4"] = "exit"
+						commands["1"] = "Save current settings and exit"
+						commands["2"] = "Delete saved state and exit"
+						commands["3"] = "Restart command every 15 minutes"
+						commands["4"] = "Exit"
 						for {
-							c, err := selectCommand("select command: ", commands)
+							c, err := selectCommand("Select command: ", commands)
 							if err != nil {
 								println(err.Error())
 								continue
@@ -129,7 +130,7 @@ func main() {
 				case "2":
 					err = client.DeleteStateFile()
 					if err != nil {
-						println("failed to delete state file > " + err.Error())
+						println("Failed to delete state file > " + err.Error())
 					}
 					println("bye bye...")
 					os.Exit(0)
@@ -148,7 +149,7 @@ func main() {
 func downloadItems(sfClient *client.SFClient, item *api.FDItem, deleteAfterDownload bool, recursive bool) error {
 	items, err := sfClient.LoadFDItems(item)
 	if err != nil {
-		println("failed to load contents of selected folder > " + err.Error())
+		println("Failed to load contents of selected folder > " + err.Error())
 		return err
 	}
 	dir, err := os.Getwd()
@@ -159,7 +160,7 @@ func downloadItems(sfClient *client.SFClient, item *api.FDItem, deleteAfterDownl
 	downloadRoot := filepath.Join(filepath.Clean(dir), client.DownloadRoot, sfClient.SelectedInventoryItem.Name)
 	err = makePath(downloadRoot)
 	if err != nil {
-		println("failed to create download root path > " + err.Error())
+		println("Failed to create download root path > " + err.Error())
 		return err
 	}
 
@@ -167,29 +168,29 @@ func downloadItems(sfClient *client.SFClient, item *api.FDItem, deleteAfterDownl
 		filePathName := filepath.Join(downloadRoot, v.FullPath)
 		err := makePath(filepath.Dir(filePathName))
 		if err != nil {
-			println("failed to create path > " + err.Error())
+			println("Failed to create path > " + err.Error())
 		}
 		if strings.EqualFold(v.ItemType, "file") {
 			written, err := sfClient.DownloadFDItem(v, filePathName)
 			if err != nil {
-				fmt.Printf("failed to download [%v] to [%v] > %v \n", v.Name, filePathName, err.Error())
+				fmt.Printf("Failed to download [%v] to [%v] > %v \n", v.Name, filePathName, err.Error())
 				continue
 			}
 			if written == -1 {
-				fmt.Printf("file %v already exist...\n", filePathName)
+				fmt.Printf("File %v already exist...\n", filePathName)
 			} else {
-				fmt.Printf("downloaded %v bytes to %v\n", written, filePathName)
+				fmt.Printf("Downloaded %v bytes to %v\n", written, filePathName)
 			}
 			if deleteAfterDownload && !strings.EqualFold(v.AccessType, "ReadOnly") {
 				err := sfClient.DeleteFDItem(v)
 				if err != nil {
-					fmt.Printf("failed to delete [%v] > %v \n", v.Name, err.Error())
+					fmt.Printf("Failed to delete [%v] > %v \n", v.Name, err.Error())
 				}
 			}
 		} else if recursive {
 			err := makePath(filePathName)
 			if err != nil {
-				println("failed to create path > " + err.Error())
+				println("Failed to create path > " + err.Error())
 				continue
 			}
 			// recurse into subdir
@@ -207,15 +208,15 @@ func makePath(path string) error {
 		if err != nil {
 			return err
 		}
-		fmt.Printf("created directory %v\n", path)
+		fmt.Printf("Created directory %v\n", path)
 	}
 	return nil
 }
 
 func selectFolder(sfClient *client.SFClient, items []api.FDItem) string {
 	commands := make(map[string]string)
-	commands["s"] = "select current folder"
-	commands["x"] = "exit"
+	commands["s"] = "Select current folder"
+	commands["x"] = "Exit"
 
 	var selectedCommand string
 
@@ -243,17 +244,17 @@ func selectFolder(sfClient *client.SFClient, items []api.FDItem) string {
 		for _, k := range keys {
 			fmt.Printf("[%v] command: %v\n", k, commands[k])
 		}
-		folderIndex, commandIndex, err := promptForIntInRangeOrCommand(fmt.Sprintf("select folder [%v-%v] or select a command", 0, c), 0, c, commands)
+		folderIndex, commandIndex, err := promptForIntInRangeOrCommand(fmt.Sprintf("Select folder [%v-%v] or select a command", 0, c), 0, c, commands)
 		if err != nil {
 			continue
 		}
 
-		if !strings.EqualFold( commandIndex, "nil") {
-			fmt.Printf("selected command: %v \n", commands[commandIndex])
+		if !strings.EqualFold(commandIndex, "nil") {
+			fmt.Printf("Selected command: %v \n", commands[commandIndex])
 			selectedCommand = commandIndex
 			break
 		} else {
-			fmt.Printf("selected index: %v \n", folderIndex)
+			fmt.Printf("Selected index: %v \n", folderIndex)
 		}
 
 		if folderIndex == 0 && hasParent == 1 && sfClient.SelectedFolder.ParentItemID == nil {
@@ -285,10 +286,10 @@ func selectFolder(sfClient *client.SFClient, items []api.FDItem) string {
 
 func loadFDroot(sfClient *client.SFClient) []api.FDItem {
 	for {
-		println("loading FD root folder...")
+		println("Loading FD root folder...")
 		items, err := sfClient.LoadFDItems(nil)
 		if err != nil {
-			println("failed to load FD root > " + err.Error())
+			println("Failed to load FD root > " + err.Error())
 			continue
 		}
 		return items
@@ -343,7 +344,7 @@ func login(sfClient *client.SFClient) {
 		password, _ := promptForString("SF password")
 		err := sfClient.Login(user, password)
 		if err != nil {
-			println("login failed > " + err.Error())
+			println(err.Error())
 			continue
 		}
 		break
@@ -354,7 +355,7 @@ func loadInventory(sfClient *client.SFClient) {
 	for {
 		err := sfClient.LoadInventory()
 		if err != nil {
-			println("failed to load inventory > " + err.Error())
+			println(err.Error())
 			continue
 		}
 		break

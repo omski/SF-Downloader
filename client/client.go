@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/omski/SF-Downloader/api"
 )
@@ -33,7 +34,7 @@ func (sf *SFClient) Login(user string, password string) error {
 	if err != nil {
 		return err
 	}
-	sf.AuthToken = &authToken
+	sf.AuthToken = authToken
 	return nil
 }
 
@@ -46,7 +47,7 @@ func (sf *SFClient) LoadInventory() error {
 	if err != nil {
 		return err
 	}
-	sf.InventoryItems = inventory
+	sf.InventoryItems = *inventory
 	return nil
 }
 
@@ -66,7 +67,7 @@ func (sf *SFClient) LoadFDItems(parent *api.FDItem) ([]api.FDItem, error) {
 	if err != nil {
 		return nil, err
 	}
-	return items, nil
+	return *items, nil
 }
 
 // LoadFDItem

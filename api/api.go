@@ -5,42 +5,75 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"strings"
+	"time"
+
+	log "github.com/sirupsen/logrus"
+
+	"github.com/hashicorp/go-retryablehttp"
 )
 
-// Login returns auth token
-func Login(user string, password string) (string, error) {
+// Timeout sets the timeout of the http client
+const Timeout = 30 * time.Second
 
-	url := "https://api.schoolfox.com/api/Users/login"
+// Retries sets the maximum retry count
+const Retries = 3
+
+// RetryDelay sets the delay between retries
+const RetryDelay = 10 * time.Second
+
+// Login returns auth token
+func Login(user string, password string) (*string, error) {
+	_errFmtString := "Login failed : %v"
+	_url := "https://api.schoolfox.com/api/Users/login"
 
 	payload := strings.NewReader("{username: \"" + user + "\", password: \"" + password + "\", applicationType: \"SF\"}")
 
-	req, _ := http.NewRequest("POST", url, payload)
+	req, err := retryablehttp.NewRequest("POST", _url, payload)
+	if err != nil {
+		return nil, fmt.Errorf("Login failed : %v", err)
+	}
 
 	addStdHeaders(req)
 
-	res, err := http.DefaultClient.Do(req)
+	_client := getClient()
+
+	res, err := _client.Do(req)
 	if err != nil {
-		return "", err
+		return nil, fmt.Errorf(_errFmtString, err)
 	}
 	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return "", err
+
+	if res.StatusCode >= 200 && res.StatusCode <= 299 {
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			return nil, fmt.Errorf(_errFmtString, err)
+		}
+		var result map[string]interface{}
+		err = json.Unmarshal(body, &result)
+		if err != nil {
+			return nil, fmt.Errorf(_errFmtString, err)
+		}
+		token := result["token"].(string)
+		return &token, nil
 	}
-	//fmt.Println(res)
-	//fmt.Println(string(body))
-	var result map[string]interface{}
-	err = json.Unmarshal(body, &result)
-	if err != nil {
-		return "", err
-	}
-	return result["token"].(string), nil
+	return nil, fmt.Errorf(_errFmtString, fmt.Errorf("HTTP Response status [%v]", res.Status))
 }
 
-func addStdHeaders(req *http.Request) {
+func getClient() *retryablehttp.Client {
+	_client := retryablehttp.NewClient()
+	_client.HTTPClient.Timeout = Timeout
+	_client.RetryMax = Retries
+	_client.RetryWaitMin = RetryDelay
+	_client.RetryWaitMax = RetryDelay
+	_client.CheckRetry = retryablehttp.ErrorPropagatedRetryPolicy
+	log.SetLevel(log.WarnLevel)
+	_client.Logger = log.StandardLogger()
+	return _client
+}
+
+func addStdHeaders(req *retryablehttp.Request) {
 	req.Header.Add("Connection", "keep-alive")
 	req.Header.Add("Pragma", "no-cache")
 	req.Header.Add("Cache-Control", "no-cache")
@@ -60,154 +93,194 @@ func addStdHeaders(req *http.Request) {
 	req.Header.Add("Accept-Encoding", "gzip, deflate")
 }
 
-func addAuthHeader(req *http.Request, authToken string) {
+func addAuthHeader(req *retryablehttp.Request, authToken string) {
 	req.Header.Add("X-ZUMO-AUTH", authToken)
 }
 
 // Inventory loads the users inventory
-func Inventory(authToken string) ([]InventoryItem, error) {
+func Inventory(authToken string) (*[]InventoryItem, error) {
+	_errFmtString := "Failed to load inventory : %v"
+	_url := "https://api.schoolfox.com/api/Common/Inventory"
 
-	url := "https://api.schoolfox.com/api/Common/Inventory"
-
-	req, _ := http.NewRequest("GET", url, nil)
+	req, err := retryablehttp.NewRequest("GET", _url, nil)
+	if err != nil {
+		return nil, fmt.Errorf(_errFmtString, err)
+	}
 
 	addStdHeaders(req)
 	addAuthHeader(req, authToken)
 
-	res, err := http.DefaultClient.Do(req)
+	_client := getClient()
+
+	res, err := _client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(_errFmtString, err)
 	}
 	defer res.Body.Close()
-	var inventory []InventoryItem
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
+
+	if res.StatusCode >= 200 && res.StatusCode <= 299 {
+		var inventory []InventoryItem
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			return nil, fmt.Errorf(_errFmtString, err)
+		}
+		err = json.Unmarshal(body, &inventory)
+		//fmt.Printf("inventory : %+v", inventory)
+		if err != nil {
+			return nil, fmt.Errorf(_errFmtString, err)
+		}
+		return &inventory, nil
 	}
-	err = json.Unmarshal(body, &inventory)
-	//fmt.Printf("inventory : %+v", inventory)
-	if err != nil {
-		return nil, err
-	}
-	return inventory, nil
+	return nil, fmt.Errorf(_errFmtString, fmt.Errorf("HTTP Response status [%v]", res.Status))
 }
 
 // LoadFDItems loads items in a FD folder
-func LoadFDItems(authToken string, parentItemID string, pupil InventoryItem) ([]FDItem, error) {
-	baseURL := "https://api.schoolfox.com/tables/FoxDriveItems"
+func LoadFDItems(authToken string, parentItemID string, pupil InventoryItem) (*[]FDItem, error) {
+	_errFmtString := "Failed to load FoxDrive items : %v"
 
-	if !strings.EqualFold( parentItemID, "null") {
+	baseURL := "https://api.schoolfox.com/tables/FoxDriveItems"
+	if !strings.EqualFold(parentItemID, "null") {
 		parentItemID = "%27" + parentItemID + "%27"
 	}
-
 	query := fmt.Sprintf("$count=true&$orderby=ItemType,+Name&$filter=SchoolClassId+eq+%%27%v%%27+and+ParentItemId+eq+%v", pupil.SchoolClassID, parentItemID)
 	if strings.EqualFold(pupil.ItemType, "Pupil") {
 		query = query + fmt.Sprintf("+and+(PupilId+eq+null+or+PupilId+eq+%%27%v%%27)", pupil.ID)
 	}
 	query = query + "+and+Deleted+eq+false"
-
 	url := baseURL + "?" + query
-	req, _ := http.NewRequest("GET", url, nil)
+
+	req, err := retryablehttp.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf(_errFmtString, err)
+	}
 
 	addStdHeaders(req)
 	addAuthHeader(req, authToken)
 
-	res, err := http.DefaultClient.Do(req)
+	_client := getClient()
+
+	res, err := _client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(_errFmtString, err)
 	}
 	defer res.Body.Close()
 
-	type Response struct {
-		Count   int
-		Results []FDItem
+	if res.StatusCode >= 200 && res.StatusCode <= 299 {
+		type Response struct {
+			Count   int
+			Results []FDItem
+		}
+		var fdResult Response
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			return nil, fmt.Errorf(_errFmtString, err)
+		}
+		err = json.Unmarshal(body, &fdResult)
+		if err != nil {
+			return nil, fmt.Errorf(_errFmtString, err)
+		}
+		return &fdResult.Results, nil
 	}
-	var fdResult Response
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
-	err = json.Unmarshal(body, &fdResult)
-	if err != nil {
-		fmt.Println(res)
-		fmt.Println(string(body))
-		return nil, err
-	}
-	return fdResult.Results, nil
+	return nil, fmt.Errorf(_errFmtString, fmt.Errorf("HTTP Response status [%v]", res.Status))
 }
 
 // LoadFDItem loads a single FDItem
 func LoadFDItem(authToken string, itemID string, pupil InventoryItem) (*FDItem, error) {
+	_errFmtString := "Failed to load FoxDrive item : %v"
 
 	url := fmt.Sprintf("https://api.schoolfox.com/api/FoxDriveItems/%v/Item/%v?pupilId=%v", pupil.SchoolClassID, itemID, pupil.ID)
-	req, _ := http.NewRequest("GET", url, nil)
+	req, err := retryablehttp.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf(_errFmtString, err)
+	}
 
 	addStdHeaders(req)
 	addAuthHeader(req, authToken)
 
-	res, err := http.DefaultClient.Do(req)
+	_client := getClient()
+
+	res, err := _client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(_errFmtString, err)
 	}
 	defer res.Body.Close()
 
-	var fdResult FDItem
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
+	if res.StatusCode >= 200 && res.StatusCode <= 299 {
+		var fdResult FDItem
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			return nil, fmt.Errorf(_errFmtString, err)
+		}
+		err = json.Unmarshal(body, &fdResult)
+		if err != nil {
+			return nil, fmt.Errorf(_errFmtString, err)
+		}
+		return &fdResult, nil
 	}
-	err = json.Unmarshal(body, &fdResult)
-	if err != nil {
-		fmt.Println(res)
-		fmt.Println(string(body))
-		return nil, err
-	}
-
-	return &fdResult, nil
+	return nil, fmt.Errorf(_errFmtString, fmt.Errorf("HTTP Response status [%v]", res.Status))
 }
 
 // DownloadFDItem downloads a FD file
 func DownloadFDItem(authToken string, parentItemID string, downloadItemID string, filePathName string) (int64, error) {
-
+	_errFmtString := "Failed to download FoxDrive item : %v"
+	written := int64(-1)
 	url := fmt.Sprintf("https://api.schoolfox.com/api/FoxDriveItems/%v/DownloadFile/%v", parentItemID, downloadItemID)
 
-	req, _ := http.NewRequest("GET", url, nil)
+	req, err := retryablehttp.NewRequest("GET", url, nil)
+	if err != nil {
+		return written, fmt.Errorf(_errFmtString, err)
+	}
 
 	addStdHeaders(req)
 	addAuthHeader(req, authToken)
 
-	written := int64(-1)
-	res, err := http.DefaultClient.Do(req)
+	_client := getClient()
+
+	res, err := _client.Do(req)
 	if err != nil {
-		return written, err
+		return written, fmt.Errorf(_errFmtString, err)
 	}
 	defer res.Body.Close()
-	// Create the file
-	out, err := os.Create(filePathName)
-	if err != nil {
+
+	if res.StatusCode >= 200 && res.StatusCode <= 299 {
+		out, err := os.Create(filePathName)
+		if err != nil {
+			return written, fmt.Errorf(_errFmtString, err)
+		}
+		defer out.Close()
+		written, err = io.Copy(out, res.Body)
+		if err != nil {
+			return written, fmt.Errorf(_errFmtString, err)
+		}
 		return written, err
 	}
-	defer out.Close()
-
-	// Write the body to file
-	written, err = io.Copy(out, res.Body)
-	return written, err
+	return written, fmt.Errorf(_errFmtString, fmt.Errorf("HTTP Response status [%v]", res.Status))
 }
 
 // DeleteFDItem delete an FD item
 func DeleteFDItem(authToken string, ItemID string) error {
+	_errFmtString := "Failed to delete FoxDrive item : %v"
 
 	url := fmt.Sprintf("https://api.schoolfox.com/tables/FoxDriveItems/%v", ItemID)
 
-	req, _ := http.NewRequest("DELETE", url, nil)
+	req, err := retryablehttp.NewRequest("DELETE", url, nil)
+	if err != nil {
+		return fmt.Errorf(_errFmtString, err)
+	}
 
 	addStdHeaders(req)
 	addAuthHeader(req, authToken)
 
-	res, err := http.DefaultClient.Do(req)
+	_client := getClient()
+
+	res, err := _client.Do(req)
 	if err != nil {
-		return err
+		return fmt.Errorf(_errFmtString, err)
 	}
 	defer res.Body.Close()
-	return nil
+
+	if res.StatusCode >= 200 && res.StatusCode <= 299 {
+		return nil
+	}
+	return fmt.Errorf(_errFmtString, fmt.Errorf("HTTP Response status [%v]", res.Status))
 }

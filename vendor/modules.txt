@@ -1,6 +1,17 @@
+# github.com/hashicorp/go-cleanhttp v0.5.1
+github.com/hashicorp/go-cleanhttp
+# github.com/hashicorp/go-retryablehttp v0.6.8
+## explicit
+github.com/hashicorp/go-retryablehttp
 # github.com/inancgumus/screen v0.0.0-20190314163918-06e984b86ed3
 ## explicit
 github.com/inancgumus/screen
+# github.com/magefile/mage v1.10.0
+github.com/magefile/mage/mg
+github.com/magefile/mage/sh
+# github.com/sirupsen/logrus v1.8.0
+## explicit
+github.com/sirupsen/logrus
 # golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
 ## explicit
 golang.org/x/crypto/ssh/terminal

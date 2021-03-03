@@ -165,11 +165,24 @@ func downloadItems(sfClient *client.SFClient, item *api.FDItem, deleteAfterDownl
 	}
 
 	for _, v := range items {
-		filePathName := filepath.Join(downloadRoot, v.FullPath)
+		isSubmissionFolder := item != nil && strings.EqualFold(item.ItemSubType, "SubmissionFolder")
+
+		dir, file := filepath.Split(v.FullPath)
+		ext := filepath.Ext(file)
+
+		itemPath := filepath.Join(dir, file, ext)
+
+		if isSubmissionFolder {
+			itemPath = filepath.Join(dir, file+" - "+v.CreatorName+ext)
+		}
+
+		filePathName := filepath.Join(downloadRoot, itemPath)
+
 		err := makePath(filepath.Dir(filePathName))
 		if err != nil {
 			println("Failed to create path > " + err.Error())
 		}
+
 		if strings.EqualFold(v.ItemType, "file") {
 			written, err := sfClient.DownloadFDItem(v, filePathName)
 			if err != nil {
@@ -181,7 +194,7 @@ func downloadItems(sfClient *client.SFClient, item *api.FDItem, deleteAfterDownl
 			} else {
 				fmt.Printf("Downloaded %v bytes to %v\n", written, filePathName)
 			}
-			if deleteAfterDownload && (item != nil && strings.EqualFold(item.ItemSubType, "SubmissionFolder")) && !strings.EqualFold(v.AccessType, "ReadOnly") {
+			if deleteAfterDownload && isSubmissionFolder && !strings.EqualFold(v.AccessType, "ReadOnly") {
 				err := sfClient.DeleteFDItem(v)
 				if err != nil {
 					fmt.Printf("Failed to delete [%v] > %v \n", v.Name, err.Error())

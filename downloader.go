@@ -29,7 +29,7 @@ func main() {
 		restored = true
 	}
 	err = sfClient.LoadInventory()
-	if err != nil {
+	if restored && err != nil {
 		println("Auth token expired...")
 	}
 	// Login
@@ -160,7 +160,7 @@ func downloadItems(sfClient *client.SFClient, item *api.FDItem, deleteAfterDownl
 	downloadRoot := filepath.Join(filepath.Clean(dir), client.DownloadRoot, sfClient.SelectedInventoryItem.Name)
 	err = makePath(downloadRoot)
 	if err != nil {
-		println("Failed to create download root path > " + err.Error())
+		println("Failed to create download path > " + err.Error())
 		return err
 	}
 
@@ -177,14 +177,16 @@ func downloadItems(sfClient *client.SFClient, item *api.FDItem, deleteAfterDownl
 				continue
 			}
 			if written == -1 {
-				fmt.Printf("File %v already exist...\n", filePathName)
+				fmt.Printf("File %v already exist\n", filePathName)
 			} else {
 				fmt.Printf("Downloaded %v bytes to %v\n", written, filePathName)
 			}
-			if deleteAfterDownload && !strings.EqualFold(v.AccessType, "ReadOnly") {
+			if deleteAfterDownload && (item != nil && strings.EqualFold(item.ItemSubType, "SubmissionFolder")) && !strings.EqualFold(v.AccessType, "ReadOnly") {
 				err := sfClient.DeleteFDItem(v)
 				if err != nil {
 					fmt.Printf("Failed to delete [%v] > %v \n", v.Name, err.Error())
+				} else {
+					fmt.Printf("Deleted FoxDrive item %v\n", v.Name)
 				}
 			}
 		} else if recursive {
@@ -327,13 +329,13 @@ func selectFromInventory(sfClient *client.SFClient) {
 			fmt.Printf("[%v] = %v, %v \n", shownPupils, sfClient.InventoryItems[i].Name, sfClient.InventoryItems[i].SchoolClassName)
 			shownPupils++
 		}
-		pupilsIndex, err := promptForIntInRange(fmt.Sprintf("select pupil or class [%v-%v]", 0, shownPupils-1), 0, shownPupils-1)
+		pupilsIndex, err := promptForIntInRange(fmt.Sprintf("Select pupil or class [%v-%v]", 0, shownPupils-1), 0, shownPupils-1)
 		if err != nil {
-			println("something went wrong > " + err.Error())
+			println("Something went wrong > " + err.Error())
 			continue
 		}
 		sfClient.SelectedInventoryItem = &sfClient.InventoryItems[pupilsIndex]
-		fmt.Printf("selected: %v \n", sfClient.SelectedInventoryItem.Name)
+		fmt.Printf("Selected: %v \n", sfClient.SelectedInventoryItem.Name)
 		break
 	}
 }
@@ -371,7 +373,7 @@ func promptForIntInRangeOrCommand(prompt string, lowerbound int, upperbound int,
 	outIndex, err := strconv.Atoi(out)
 	if err == nil {
 		if outIndex < lowerbound || outIndex > upperbound {
-			return 0, "nil", errors.New("value out of range")
+			return 0, "nil", errors.New("Value out of range")
 		}
 		return outIndex, "nil", nil
 	}
@@ -379,7 +381,7 @@ func promptForIntInRangeOrCommand(prompt string, lowerbound int, upperbound int,
 	if _, found := commands[out]; found {
 		return 0, out, nil
 	}
-	return 0, "nil", errors.New("invalid command")
+	return 0, "nil", errors.New("Invalid command")
 }
 
 func promptForIntInRange(prompt string, lowerbound int, upperbound int) (int, error) {
@@ -388,7 +390,7 @@ func promptForIntInRange(prompt string, lowerbound int, upperbound int) (int, er
 		return out, err
 	}
 	if out < lowerbound || out > upperbound {
-		return out, errors.New("value out of range")
+		return out, errors.New("Value out of range")
 	}
 	return out, nil
 }
@@ -409,7 +411,7 @@ func promptForString(prompt string) (string, error) {
 	in := bufio.NewReader(os.Stdin)
 	input, err := in.ReadString('\n')
 	if err != nil {
-		err = errors.New("input could not be read")
+		err = errors.New("Input could not be read")
 	}
 	return strings.TrimSpace(input), err
 }

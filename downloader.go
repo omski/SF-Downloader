@@ -168,12 +168,11 @@ func downloadItems(sfClient *client.SFClient, item *api.FDItem, deleteAfterDownl
 		isSubmissionFolder := item != nil && strings.EqualFold(item.ItemSubType, "SubmissionFolder")
 
 		dir, file := filepath.Split(v.FullPath)
-		ext := filepath.Ext(file)
 
-		itemPath := filepath.Join(dir, file, ext)
+		itemPath := filepath.Join(dir, file)
 
 		if isSubmissionFolder {
-			itemPath = filepath.Join(dir, file+" - "+v.CreatorName+ext)
+			itemPath = filepath.Join(dir, v.CreatorName+" - "+v.CreatedAt+" - "+file)
 		}
 
 		filePathName := filepath.Join(downloadRoot, itemPath)

@@ -30,8 +30,8 @@ Man kann nun in Unterverzeichnisse navigieren oder das aktuell dargestellte Verz
 * Nachdem ein Verzeichnis ausgewählt wurde besteht die Option:</br>
 1 - die Dateien des ausgewählten Verzeichnisses herunterzuladen</br>
 2 - die Dateien des ausgewählten Verzeichnisses und aller Unterverzeichnisse herunterzuladen</br>
-3 - die Dateien des ausgewählten Verzeichnisses herunterzuladen und nach erfolgreichem Download auf Foxdrive zu löschen (nicht ReadOnly)</br>
-4 - die Dateien des ausgewählten Verzeichnisses und aller Unterverzeichnisse herunterzuladen und nach erfolgreichem Download auf Foxdrive zu löschen (nicht ReadOnly)</br>
+3 - die Dateien des ausgewählten Verzeichnisses herunterzuladen und nach erfolgreichem Download auf Foxdrive zu löschen (nur in Abgabe Ordern und nicht ReadOnly Dateien)</br>
+4 - die Dateien des ausgewählten Verzeichnisses und aller Unterverzeichnisse herunterzuladen und nach erfolgreichem Download auf Foxdrive zu löschen (nur in Abgabe Ordern und nicht ReadOnly Dateien)</br>
 ![Select Command](./assets/select_command.png)
 * Nach Ausführung des Kommandos besteht die die Wahl zwischen folgenden Optionen:</br>
 1 - Speichern des aktuellen Zustands. Das Programm wird danach beendet. Der Programmstatus wird in einer Datei, namens '.fd-downloader_state', im gleichen Verzeichnis gespeichert in dem sich SF-Downloader befindet. Der gespeicherte Status wird beim nächsten Start des Programms automatisch geladen. Der ausgewählte Inventareintrag, die Ablage und das gewählte Kommando werden sofort nach dem Start ausgewählt und ausgeführt. Sollte der Login abgelaufen sein, fordert das Programm zu einem erneuten Login auf.</br>
